@@ -22,7 +22,7 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 - **Consultare gli eventi:** una home con i prossimi eventi appesi a un festone, un catalogo con ricerca e un'agenda mese per mese.
 - **Filtrare e ordinare:** per testo libero (senza distinzione di accenti), città e periodo (tutti, in corso, in arrivo: gli eventi terminati non compaiono), e per data, nome o città, in vista a griglia o a elenco.
 - **Segnalare un evento:** un modulo validato con selettori di data e suggerimenti per le città. La segnalazione di un utente anonimo resta nascosta agli altri finché non è approvata; chi l'ha inviata la vede come *in attesa* sotto «Le mie» sul proprio dispositivo. Il modulo avverte che la segnalazione sarà visibile a tutti solo dopo la verifica degli amministratori.
-- **Revisionare le segnalazioni:** `Admin` ed `Editor` approvano o rifiutano le segnalazioni in blocco su `/gestione/revisione` e possono ritirare un evento già approvato. Gli eventi segnalati da `Admin` o `Editor` sono pubblicati subito. «Gestione» è nel menu ⋮ della barra in alto, con il numero delle segnalazioni da moderare sul pulsante, e `Admin` ed `Editor` ricevono un riepilogo via email (vedi [Moderazione](docs/moderazione.md)).
+- **Revisionare le segnalazioni:** `Admin` ed `Editor` approvano o rifiutano le segnalazioni in blocco su `/gestione/revisione` e possono ritirare un evento già approvato. Gli eventi segnalati da `Admin` o `Editor` sono pubblicati subito. «Gestione» è nel menu ⋮ della barra in alto, con il numero delle segnalazioni da moderare sul pulsante, e `Admin` ed `Editor` ricevono un riepilogo via email (vedi [Moderazione](http://docs-sagre-eventi.aepserver.it/moderazione)).
 - **Gestire gli utenti:** `Admin` crea, modifica (email, reset della password, ruoli) ed elimina gli utenti su `/gestione/utenti`. L'ultimo `Admin` non può essere rimosso.
 - **Modificare gli eventi:** solo dopo l'accesso come `Admin` o `Editor`. Le modifiche anonime a eventi esistenti sono rifiutate dall'API (`403`).
 - **Conclusione automatica:** il server conclude un evento quando la data di fine è passata. Un evento concluso non può più essere modificato da nessuno e l'API non ha la cancellazione.
@@ -31,19 +31,20 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 - **Funziona offline:** tutto ciò che vedi è salvato sul dispositivo e si sincronizza quando torna la connessione, quando riapri l'app e ogni 10 minuti se la pagina è aperta.
 - **Installabile (PWA):** aggiungila alla schermata Home del telefono o installala sul desktop; l'app si apre anche senza rete e una nuova versione viene segnalata nella barra in alto.
 - **Interfaccia accessibile:** interfaccia in italiano, tema chiaro e scuro, utilizzabile da tastiera e con screen reader, adattata fino al telefono.
+- **Informazioni sull'app:** la pagina `/informazioni` mostra la versione dell'app e la data di rilascio, prese da `package.json` e dalla data di build, senza chiamate al server.
 
 ## Documentazione
 
 | Documento | Contenuto |
 | --- | --- |
-| [Architettura](docs/architettura.md) | Progetti della soluzione e motivazioni dello stack |
-| [Moderazione](docs/moderazione.md) | Stati degli eventi e avviso via email ai moderatori |
-| [Protezione anti-bot](docs/anti-bot.md) | Prova di lavoro sull'invio delle segnalazioni |
-| [Sincronizzazione e PWA](docs/sincronizzazione-pwa.md) | Offline-first, installazione e aggiornamenti |
-| [API](docs/api.md) | Endpoint e forma dell'evento |
-| [Sviluppo](docs/sviluppo.md) | Build, test e migrazioni del database |
-| [Configurazione](docs/configurazione.md) | Impostazioni e variabili d'ambiente |
-| [Deployment](docs/deployment.md) | Immagini Docker, compose e nginx; procedura passo passo in [DEPLOY.md](DEPLOY.md) |
+| [Architettura](http://docs-sagre-eventi.aepserver.it/architettura) | Progetti della soluzione e motivazioni dello stack |
+| [Moderazione](http://docs-sagre-eventi.aepserver.it/moderazione) | Stati degli eventi e avviso via email ai moderatori |
+| [Protezione anti-bot](http://docs-sagre-eventi.aepserver.it/anti-bot) | Prova di lavoro sull'invio delle segnalazioni |
+| [Sincronizzazione e PWA](http://docs-sagre-eventi.aepserver.it/sincronizzazione-pwa) | Offline-first, installazione e aggiornamenti |
+| [API](http://docs-sagre-eventi.aepserver.it/api) | Endpoint e forma dell'evento |
+| [Sviluppo](http://docs-sagre-eventi.aepserver.it/sviluppo) | Build, test e migrazioni del database |
+| [Configurazione](http://docs-sagre-eventi.aepserver.it/configurazione) | Impostazioni e variabili d'ambiente |
+| [Deployment](http://docs-sagre-eventi.aepserver.it/deployment) | Immagini Docker, compose e nginx; procedura passo passo in [DEPLOY.md](DEPLOY.md) |
 
 ## Per iniziare
 
@@ -59,8 +60,8 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 Clona il progetto:
 
 ```bash
-git clone https://github.com/AngeloDotNet/SagreEventi.SQLServer.git
-cd SagreEventi.SQLServer
+git clone https://github.com/AngeloDotNet/SagreEventi.git
+cd SagreEventi
 ```
 
 Metti i segreti in `src/SagreEventi.Web.Server/appsettings.local.json`. È ignorato da git e caricato dopo `appsettings.json`:
@@ -95,6 +96,8 @@ npm start
 ```
 
 `npm start` apre da solo il browser su `http://localhost:4200`. In sviluppo le richieste a `/api` sono inoltrate a `https://localhost:5001` (vedi `proxy.conf.json`).
+
+Prima di `npm start` e `npm run build` lo script `scripts/build-info.mjs` genera `src/app/core/build-info.generated.ts` con la versione di `package.json` e la data di build (fuso `Europe/Rome`). Il file è generato e non si modifica a mano; per cambiare la versione mostrata si aggiorna `version` in `package.json`.
 
 > [!WARNING]
 > I valori predefiniti di `appsettings.json` sono finti (`admin@sagreeventi.local`, `editor@sagreeventi.local`). Cambiali prima di qualsiasi deploy. Dopo l'aggiornamento di un database esistente ogni evento è `InAttesa`: accedi come `Admin` o `Editor`, apri `/gestione/revisione` e approva gli eventi esistenti (fino a 100 per volta).
