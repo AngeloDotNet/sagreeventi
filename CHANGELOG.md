@@ -4,6 +4,13 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-08
 
+### Link della documentazione nel README alla wiki
+
+**Perché:** il dominio del sito di documentazione non è ancora attivo; i link del README devono puntare alla wiki, come già la guida di deploy.
+**Cosa / Dove:** `README.md`: otto link (tabella «Documentazione» e riga «Moderazione») da `http://docs-sagre-eventi.aepserver.it/<pagina>` a `http://wiki.aepserver.it/sagreeventi/<pagina>`. Stesso nome di pagina.
+**Verifica:** solo documentazione; nessun riferimento residuo al vecchio dominio nel codice e nei documenti del repository, esclusa la storia.
+**Note:** le pagine della wiki vanno verificate una per una: il percorso è stato dedotto dal nome della pagina.
+
 ### Voce account in fondo al menu in alto
 
 **Perché:** su richiesta dell'utente, la voce di accesso o uscita non deve più essere la prima del menu a tre puntini.
@@ -99,7 +106,7 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 **Perché:** la documentazione è stata spostata nel sito Docusaurus `E:\Disco_E\Progetti\sagreeventi.docs`, che è ora l'unica sorgente delle pagine. Le copie in `docs/` del repository applicativo erano duplicate e rischiavano di divergere. Piano in `docs/piani/PLAN-documentazione-sito.md`.
 **Cosa / Dove:**
-- `README.md`: la tabella «Documentazione» e il link della riga «Moderazione» puntano alle pagine sul sito (`http://docs-sagre-eventi.aepserver.it`).
+- `README.md`: la tabella «Documentazione» e il link della riga «Moderazione» puntano alle pagine sul sito (`http://wiki.aepserver.it/sagreeventi`; a quella data il dominio del sito era `http://docs-sagre-eventi.aepserver.it`).
 - `DEPLOY.md` riga 196: il link alla sincronizzazione PWA punta al sito.
 - `CLAUDE.md`, «Note per Claude»: riga sulla sorgente della documentazione.
 - Rimossi `docs/architettura.md`, `docs/moderazione.md`, `docs/anti-bot.md`, `docs/api.md`, `docs/sviluppo.md`, `docs/configurazione.md`, `docs/deployment.md`, `docs/sincronizzazione-pwa.md` e `docs/screenshots/` (3 PNG, identici a quelli del sito). `docs/piani/` resta.
