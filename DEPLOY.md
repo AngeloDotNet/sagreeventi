@@ -74,15 +74,15 @@ Per il compose unico bastano due file in una cartella vuota, senza clonare il re
 
 ```bash
 mkdir sagreeventi && cd sagreeventi
-curl -O https://raw.githubusercontent.com/AngeloDotNet/SagreEventi.SQLServer/main/deploy/docker-compose.yml
-curl -o .env https://raw.githubusercontent.com/AngeloDotNet/SagreEventi.SQLServer/main/deploy/.env.example
+curl -O https://raw.githubusercontent.com/AngeloDotNet/SagreEventi/main/deploy/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/AngeloDotNet/SagreEventi/main/deploy/.env.example
 ```
 
 Per i due compose separati (e per `sites-available/`) si può invece clonare il repository:
 
 ```bash
-git clone <url-del-repo> /percorso/SagreEventi.SQLServer
-cd /percorso/SagreEventi.SQLServer/deploy
+git clone <url-del-repo> /percorso/SagreEventi
+cd /percorso/SagreEventi/deploy
 ```
 
 I comandi seguenti vanno lanciati dalla cartella che contiene i compose.
@@ -193,7 +193,7 @@ Certbot aggiunge il blocco 443 (con gli stessi header, quindi `X-Forwarded-Proto
 
 ## PWA: installazione, offline e aggiornamenti
 
-L'app è una PWA: si può installare («Aggiungi a schermata Home» / «Installa app») e si apre anche senza rete. I dati restano gestiti dallo store locale (vedi [Sincronizzazione e PWA](docs/sincronizzazione-pwa.md)); il service worker mette in cache solo i file dell'app, **non** le chiamate `/api`.
+L'app è una PWA: si può installare («Aggiungi a schermata Home» / «Installa app») e si apre anche senza rete. I dati restano gestiti dallo store locale (vedi [Sincronizzazione e PWA](http://wiki.aepserver.it/sagreeventi/sincronizzazione-pwa)); il service worker mette in cache solo i file dell'app, **non** le chiamate `/api`.
 
 Requisiti e comportamento:
 
