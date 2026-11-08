@@ -2,7 +2,7 @@
 
 Creato il 2026-11-01. È un **registro**, non un piano di lavoro: serve a non perdere i piani che non esistono ancora e le attività che non hanno ancora un `PLAN-*.md`. Nessun codice viene toccato da questo file. Quando di una voce si scrive il piano, la si spunta qui e si indica il file; quando l'attività è conclusa, la voce si toglie (la storia resta in `CHANGELOG.md`).
 
-L'ordine di esecuzione proposto (fasi 0-6) è in `PUNTI-APERTI.md`, sezione «Ordine di esecuzione proposto». Come per ogni piano: un `PLAN-<nome>.md` per attività, una domanda alla volta all'utente, nessuna modifica senza il «vai».
+L'ordine di esecuzione proposto (fasi 0-6) è in `CHECKLIST.md`, sezione «Ordine di esecuzione proposto». Come per ogni piano: un `PLAN-<nome>.md` per attività, una domanda alla volta all'utente, nessuna modifica senza il «vai».
 
 ## A. Piani da scrivere (già collocati nell'ordine di esecuzione)
 
@@ -67,5 +67,5 @@ L'ordine di esecuzione proposto (fasi 0-6) è in `PUNTI-APERTI.md`, sezione «Or
 - Ricerca indirizzi tramite il server, con cache condivisa: evoluzione futura in `PLAN-gps.md`, da riconsiderare solo con blocchi o errori 429 di Nominatim.
 - Valutazione di un'app React Native: passo C1 di `PLAN-gps.md`.
 - Filtro «vicino a me» lato server: B3 di `PLAN-gps.md`, chiuso.
-- Verifiche manuali dopo il deploy (email ai moderatori, sincronizzazione, PWA, menu, dettaglio su telefono): sezione «Da verificare dopo il deploy» di `PUNTI-APERTI.md`.
+- Verifiche manuali dopo il deploy (email ai moderatori, sincronizzazione, PWA, menu, dettaglio su telefono): sezione «Da verificare dopo il deploy» di `CHECKLIST.md`.
 - Commit ancora da fare: `piano-commit.md`.

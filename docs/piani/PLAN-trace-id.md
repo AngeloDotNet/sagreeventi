@@ -9,7 +9,7 @@ Rendere vera la riga «Logging» di `CLAUDE.md` («`traceId` propagato con heade
 - Nessun dato personale nell'identificativo.
 - Il valore in arrivo è non fidato (header esterno, `security.md`): si accetta solo un UUID ben formato, altrimenti il backend ne genera uno nuovo (mai concatenato nei log, solo come parametro del template strutturato).
 - `AddProblemDetails()` oggi aggiunge già un `traceId` dei `ProblemDetails` basato su `Activity`/`TraceIdentifier`: va allineato al valore dell'header, senza duplicarlo.
-- Conviene coordinarlo con il piano di `IExceptionHandler` (da scrivere, vedi `PUNTI-APERTI.md`), che deve restituire lo stesso `traceId` e non esporre dettagli interni.
+- Conviene coordinarlo con il piano di `IExceptionHandler` (da scrivere, vedi `CHECKLIST.md`), che deve restituire lo stesso `traceId` e non esporre dettagli interni.
 
 ## Passi
 - [ ] 1. **Backend, middleware:** legge `X-Trace-Id` (solo UUID valido, altrimenti ne genera uno), lo imposta come identificativo della richiesta, lo apre come scope di log (`TraceId`) e lo scrive nell'header di risposta; i `ProblemDetails` riportano lo stesso `traceId`. File: nuovo metodo di estensione in `Extensions/`, registrato in `Program.cs` subito dopo `UseForwardedHeaders`; commenti XML in inglese.
