@@ -81,16 +81,16 @@ export class AppComponent {
   ];
 
   /**
-   * Entries of the topbar menu: account (login or logout), "Le mie" (mobile only: on desktop the top navigation has it),
-   * "Gestione" (every width, for who can moderate) and the information page.
+   * Entries of the topbar menu: "Le mie" (mobile only: on desktop the top navigation has it), "Gestione" (every width,
+   * for who can moderate), the information page and, last, the account entry (login or logout).
    */
   protected readonly voci = computed<MenuItem[]>(() => [
-    this.auth.autenticato()
-      ? { label: `Esci (${this.auth.email()})`, icon: 'pi pi-sign-out', command: () => this.esci() }
-      : { label: 'Accedi', icon: 'pi pi-user', routerLink: '/login' },
     ...this.linkMie().map((l) => ({ label: l.etichetta, icon: `pi ${l.icona}`, routerLink: l.path, styleClass: 'solo-mobile' })),
     ...this.linkGestione().map((l) => ({ label: l.etichetta, icon: `pi ${l.icona}`, routerLink: l.path })),
     { label: 'Informazioni', icon: 'pi pi-info-circle', routerLink: '/informazioni' },
+    this.auth.autenticato()
+      ? { label: `Esci (${this.auth.email()})`, icon: 'pi pi-sign-out', command: () => this.esci() }
+      : { label: 'Accedi', icon: 'pi pi-user', routerLink: '/login' },
   ]);
 
   /** Theme picker entries: the active one is highlighted. */

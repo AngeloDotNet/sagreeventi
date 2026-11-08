@@ -118,20 +118,20 @@ describe('AppComponent navigation', () => {
   describe('top menu', () => {
     const etichette = (voci: HTMLElement[]) => voci.map((v) => v.textContent?.trim());
 
-    it('has Accedi and Informazioni only for an anonymous user', async () => {
+    it('has Informazioni and, last, Accedi only for an anonymous user', async () => {
       crea();
 
-      expect(etichette(await apriMenu())).toEqual(['Accedi', 'Informazioni']);
+      expect(etichette(await apriMenu())).toEqual(['Informazioni', 'Accedi']);
     });
 
-    it('adds "Le mie" (mobile-only) and "Gestione", before Informazioni', async () => {
+    it('adds "Le mie" (mobile-only) and "Gestione", before Informazioni and the account entry', async () => {
       mieSegnalazioni.set([{ id: 'a' }]);
       modificaConsentita.set(true);
       crea();
 
       const voci = await apriMenu();
 
-      expect(etichette(voci)).toEqual(['Accedi', 'Le mie', 'Gestione', 'Informazioni']);
+      expect(etichette(voci)).toEqual(['Le mie', 'Gestione', 'Informazioni', 'Accedi']);
       expect(voci.filter((v) => v.classList.contains('solo-mobile')).map((v) => v.textContent?.trim())).toEqual(['Le mie']);
     });
 
@@ -142,7 +142,7 @@ describe('AppComponent navigation', () => {
 
       const voci = await apriMenu();
 
-      expect(etichette(voci)).toEqual(['Accedi', 'Gestione (2)', 'Informazioni']);
+      expect(etichette(voci)).toEqual(['Gestione (2)', 'Informazioni', 'Accedi']);
       expect(voci.some((v) => v.classList.contains('solo-mobile'))).toBe(false);
     });
   });
