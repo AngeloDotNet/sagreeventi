@@ -31,6 +31,8 @@ public static class EventoValidator
                 risultati.Add(new ValidationResult("L'id dell'evento è obbligatorio.", [nameof(EventoModel.Id)]));
             }
 
+            AggiungiErrori(evento, risultati);
+
             foreach (var gruppo in risultati.SelectMany(r => r.MemberNames.DefaultIfEmpty(string.Empty), (r, membro) => (membro, r.ErrorMessage))
                          .GroupBy(x => x.membro))
             {
@@ -41,4 +43,33 @@ public static class EventoValidator
 
         return errori;
     }
+
+    // Rules that the DataAnnotations cannot express: address without control characters, coordinates in pairs and with limited decimals
+    private static void AggiungiErrori(EventoModel evento, List<ValidationResult> risultati)
+    {
+        if (evento.Indirizzo is not null && evento.Indirizzo.Any(char.IsControl))
+        {
+            risultati.Add(new ValidationResult("L'indirizzo dell'evento contiene caratteri non validi.", [nameof(EventoModel.Indirizzo)]));
+        }
+
+        if (evento.Latitudine.HasValue != evento.Longitudine.HasValue)
+        {
+            risultati.Add(new ValidationResult("Latitudine e longitudine vanno indicate insieme.",
+                [nameof(EventoModel.Latitudine), nameof(EventoModel.Longitudine)]));
+        }
+
+        if (HaTroppiDecimali(evento.Latitudine))
+        {
+            risultati.Add(new ValidationResult($"La latitudine può avere al massimo {EventoModel.MaxCoordinateDecimals} decimali.", [nameof(EventoModel.Latitudine)]));
+        }
+
+        if (HaTroppiDecimali(evento.Longitudine))
+        {
+            risultati.Add(new ValidationResult($"La longitudine può avere al massimo {EventoModel.MaxCoordinateDecimals} decimali.", [nameof(EventoModel.Longitudine)]));
+        }
+    }
+
+    // decimal.Round returns a different value only when digits beyond the allowed scale are non-zero (45.4642000 is fine)
+    private static bool HaTroppiDecimali(decimal? valore)
+        => valore.HasValue && decimal.Round(valore.Value, EventoModel.MaxCoordinateDecimals) != valore.Value;
 }

@@ -10,6 +10,16 @@ public class Evento
     public string Id { get; set; } = string.Empty;
     public string NomeEvento { get; set; } = string.Empty;
     public string CittaEvento { get; set; } = string.Empty;
+
+    /// <summary>Optional street address, used by clients to find the event on a map; null when not given.</summary>
+    public string? Indirizzo { get; set; }
+
+    /// <summary>Optional latitude in degrees (-90..90, up to 6 decimals); always set together with <see cref="Longitudine"/>.</summary>
+    public decimal? Latitudine { get; set; }
+
+    /// <summary>Optional longitude in degrees (-180..180, up to 6 decimals); always set together with <see cref="Latitudine"/>.</summary>
+    public decimal? Longitudine { get; set; }
+
     public DateTime DataInizioEvento { get; set; }
     public DateTime DataFineEvento { get; set; }
     public string DescrizioneEvento { get; set; } = string.Empty;

@@ -13,6 +13,9 @@ public static class EventoMappings
         Id = e.Id,
         NomeEvento = e.NomeEvento,
         CittaEvento = e.CittaEvento,
+        Indirizzo = e.Indirizzo,
+        Latitudine = e.Latitudine,
+        Longitudine = e.Longitudine,
         DataInizioEvento = e.DataInizioEvento,
         DataFineEvento = e.DataFineEvento,
         DescrizioneEvento = e.DescrizioneEvento,
@@ -35,6 +38,9 @@ public static class EventoMappings
         Id = e.Id,
         NomeEvento = e.Stato == StatoModerazione.Approvato ? e.NomeEvento : string.Empty,
         CittaEvento = e.Stato == StatoModerazione.Approvato ? e.CittaEvento : string.Empty,
+        Indirizzo = e.Stato == StatoModerazione.Approvato ? e.Indirizzo : null,
+        Latitudine = e.Stato == StatoModerazione.Approvato ? e.Latitudine : null,
+        Longitudine = e.Stato == StatoModerazione.Approvato ? e.Longitudine : null,
         DataInizioEvento = e.DataInizioEvento,
         DataFineEvento = e.DataFineEvento,
         DescrizioneEvento = e.Stato == StatoModerazione.Approvato ? e.DescrizioneEvento : string.Empty,
@@ -42,6 +48,10 @@ public static class EventoMappings
         DataOraUltimaModifica = e.DataOraUltimaModifica,
         Stato = e.Stato,
     };
+
+    /// <summary>Trims the address and turns a blank one into null, so that "no address" has a single representation.</summary>
+    public static string? NormalizzaIndirizzo(string? indirizzo)
+        => string.IsNullOrWhiteSpace(indirizzo) ? null : indirizzo.Trim();
 
     /// <summary>Creates a new entity from the DTO, including its Id.</summary>
     public static Evento ToEntity(this EventoModel dto)
@@ -59,6 +69,9 @@ public static class EventoMappings
     {
         evento.NomeEvento = dto.NomeEvento;
         evento.CittaEvento = dto.CittaEvento;
+        evento.Indirizzo = NormalizzaIndirizzo(dto.Indirizzo);
+        evento.Latitudine = dto.Latitudine;
+        evento.Longitudine = dto.Longitudine;
         evento.DataInizioEvento = dto.DataInizioEvento.GetValueOrDefault();
         evento.DataFineEvento = dto.DataFineEvento.GetValueOrDefault();
         evento.DescrizioneEvento = dto.DescrizioneEvento;

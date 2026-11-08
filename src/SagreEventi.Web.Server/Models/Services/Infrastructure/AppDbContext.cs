@@ -24,6 +24,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
             entity.HasKey(evento => evento.Id);
             entity.Property(evento => evento.NomeEvento).IsRequired();
             entity.Property(evento => evento.CittaEvento).IsRequired();
+            entity.Property(evento => evento.Indirizzo).HasMaxLength(EventoModel.MaxIndirizzoLength);
+            entity.Property(evento => evento.Latitudine).HasPrecision(9, 6);
+            entity.Property(evento => evento.Longitudine).HasPrecision(9, 6);
             entity.Property(evento => evento.DescrizioneEvento).IsRequired();
             entity.Property(evento => evento.MotivoRifiuto).HasMaxLength(500);
             entity.Property(evento => evento.RevisionatoDa).HasMaxLength(256);
