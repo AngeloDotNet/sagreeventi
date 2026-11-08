@@ -4,6 +4,13 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-08
 
+### Fonte della documentazione nella wiki
+
+**Perché:** la documentazione di SagreEventi non sta più nel sito `sagreeventi.docs` (non più presente): la sorgente unica è la wiki `E:\Disco_E\Progetti\wiki`, cartella `docs\sagreeventi`.
+**Cosa / Dove:** `CLAUDE.md` (nota «Documentazione»: sorgente, percorso e piano aggiornati alla wiki).
+**Verifica:** solo documentazione; nessuna build né test richiesti. Riferimenti residui a `sagreeventi.docs` nel repository: solo nella storia (`CHANGELOG.md` del 2026-11-06) e in `docs/piani/`.
+**Note:** `piano-commit.md` e `CHECKLIST.md` restano fuori dal commit, come da regola.
+
 ### Link della documentazione nel README alla wiki
 
 **Perché:** il dominio del sito di documentazione non è ancora attivo; i link del README devono puntare alla wiki, come già la guida di deploy.
