@@ -93,4 +93,4 @@ Allineamento del 2026-11-06 alle regole aggiornate del template (decisione D5: s
 - Ogni modifica che tocca input, autenticazione o dati va verificata con test di sicurezza (es. input malevoli)
 
 ## Eccezioni alle regole globali
-- **Integrazione GitHub approvata:** PR no, push no, tag no, rilasci no (2026-11-06)
+- **Integrazione GitHub approvata:** PR sì, push sì, tag no, rilasci no (2026-11-08)
