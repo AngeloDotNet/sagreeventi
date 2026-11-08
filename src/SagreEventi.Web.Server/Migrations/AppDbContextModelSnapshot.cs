@@ -185,6 +185,18 @@ namespace SagreEventi.Web.Server.Migrations
                     b.Property<bool>("EventoConcluso")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Indirizzo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("Latitudine")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("Longitudine")
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
+
                     b.Property<string>("MotivoRifiuto")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");

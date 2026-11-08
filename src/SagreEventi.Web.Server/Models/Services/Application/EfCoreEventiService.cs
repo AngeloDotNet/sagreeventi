@@ -246,6 +246,7 @@ public sealed class EfCoreEventiService(AppDbContext dbContext, IFusionCache cac
 
     private static bool StessoContenuto(Evento e, EventoModel m) =>
         e.NomeEvento == m.NomeEvento && e.CittaEvento == m.CittaEvento && e.DescrizioneEvento == m.DescrizioneEvento
+        && e.Indirizzo == EventoMappings.NormalizzaIndirizzo(m.Indirizzo) && e.Latitudine == m.Latitudine && e.Longitudine == m.Longitudine
         && e.DataInizioEvento == m.DataInizioEvento.GetValueOrDefault() && e.DataFineEvento == m.DataFineEvento.GetValueOrDefault();
 
     private static void Revisiona(Evento evento, string revisore, DateTime ora)

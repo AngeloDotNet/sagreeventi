@@ -7,7 +7,10 @@ public class EventoModel
     public const int MaxIdLength = 100;
     public const int MaxNomeLength = 200;
     public const int MaxCittaLength = 100;
+    public const int MaxIndirizzoLength = 200;
     public const int MaxDescrizioneLength = 4000;
+    /// <summary>Maximum number of decimals accepted for the coordinates (about 11 cm of precision).</summary>
+    public const int MaxCoordinateDecimals = 6;
 
     // Field: Id
     [StringLength(MaxIdLength, ErrorMessage = "L'id dell'evento può essere lungo al massimo {1} caratteri")]
@@ -26,6 +29,22 @@ public class EventoModel
     [Display(Name = "Luogo Evento")]
     [DataType(DataType.Text)]
     public string CittaEvento { get; set; } = string.Empty;
+
+    // Field: optional street address (more precise than the city, helps to place the event on a map)
+    [StringLength(MaxIndirizzoLength, ErrorMessage = "L'indirizzo dell'evento può essere lungo al massimo {1} caratteri")]
+    [Display(Name = "Indirizzo Evento")]
+    [DataType(DataType.Text)]
+    public string? Indirizzo { get; set; }
+
+    // Field: optional latitude, to be sent together with the longitude
+    [Range(-90.0, 90.0, ErrorMessage = "La latitudine deve essere compresa tra {1} e {2}")]
+    [Display(Name = "Latitudine")]
+    public decimal? Latitudine { get; set; }
+
+    // Field: optional longitude, to be sent together with the latitude
+    [Range(-180.0, 180.0, ErrorMessage = "La longitudine deve essere compresa tra {1} e {2}")]
+    [Display(Name = "Longitudine")]
+    public decimal? Longitudine { get; set; }
 
     // Field: event start date
     [Required(ErrorMessage = "La data di inizio dell'evento è obbligatoria")]
