@@ -8,7 +8,7 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f4f5f7",
+  "background_color": "#99213f",
   "theme_color": "#99213f",
   "categories": ["food", "lifestyle", "events"],
   "icons": [

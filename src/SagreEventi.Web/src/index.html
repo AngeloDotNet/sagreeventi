@@ -17,28 +17,22 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
-  <script>
-    // Applica il tema prima del primo render, per evitare il lampo bianco.
-    (function () {
-      try {
-        // Stesse classi che applica ThemeService: qui serve solo a evitare il lampo prima dell'avvio di Angular
-        var classi = {
-          dark: ['app-dark'],
-          halloween: ['app-dark', 'app-halloween'],
-          natale: ['app-natale'],
-          'natale-scuro': ['app-dark', 'app-natale-scuro'],
-          pasqua: ['app-pasqua'],
-          ferragosto: ['app-ferragosto']
-        };
-        var s = localStorage.getItem('sagreeventi.theme');
-        var applica = s ? classi[s] || [] : window.matchMedia('(prefers-color-scheme: dark)').matches ? classi.dark : [];
-        for (var i = 0; i < applica.length; i++) document.documentElement.classList.add(applica[i]);
-      } catch (e) {}
-    })();
-  </script>
+  <script src="theme-init.js"></script>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="app-loader" role="status">
+      <svg class="app-loader__logo" viewBox="4 13 56 32" aria-hidden="true" focusable="false">
+        <path class="app-loader__filo" d="M7 17h50" fill="none" stroke-width="2.5" stroke-linecap="round"/>
+        <path class="app-loader__bandiera app-loader__bandiera--1" d="M10 19h14l-7 22z"/>
+        <path class="app-loader__bandiera app-loader__bandiera--2" d="M25 19h14l-7 22z"/>
+        <path class="app-loader__bandiera app-loader__bandiera--3" d="M40 19h14l-7 22z"/>
+      </svg>
+      <span class="app-loader__nome" aria-hidden="true">Sagre &amp; Eventi</span>
+      <div class="app-loader__barra" aria-hidden="true"></div>
+      <span class="app-loader__sr">Caricamento in corso</span>
+    </div>
+  </app-root>
   <noscript>Questa applicazione richiede JavaScript.</noscript>
 </body>
 </html>
