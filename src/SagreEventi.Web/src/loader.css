@@ -1,0 +1,77 @@
+/* Loader mostrato finché Angular non parte: sta dentro <app-root> e sparisce al bootstrap.
+   Resta bordeaux in ogni tema, per continuare lo splash nativo (che ha un colore fisso). */
+:root {
+  --loader-sfondo: #99213f;
+  --loader-testo: #fff;
+  --loader-barra-fondo: #ffffff40;
+  --loader-bandiera-1: #f5a524;
+  --loader-bandiera-2: #fff;
+  --loader-bandiera-3: #2f7d4f;
+}
+.app-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--loader-sfondo);
+  color: var(--loader-testo);
+}
+.app-loader__logo {
+  width: clamp(120px, 34vw, 180px);
+  height: auto;
+  overflow: visible;
+}
+.app-loader__filo { stroke: var(--loader-testo); }
+.app-loader__bandiera {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: loader-appari 400ms ease-out both, loader-oscilla 2400ms ease-in-out 400ms infinite alternate;
+}
+.app-loader__bandiera--1 { fill: var(--loader-bandiera-1); animation-delay: 0ms, 400ms; }
+.app-loader__bandiera--2 { fill: var(--loader-bandiera-2); animation-delay: 150ms, 550ms; }
+.app-loader__bandiera--3 { fill: var(--loader-bandiera-3); animation-delay: 300ms, 700ms; }
+.app-loader__nome {
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  animation: loader-appari-nome 400ms ease-out 450ms both;
+}
+/* Barra indeterminata: dice che sta succedendo qualcosa, non quanto manca. */
+.app-loader__barra {
+  position: relative;
+  width: clamp(120px, 34vw, 180px);
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--loader-barra-fondo);
+  animation: loader-appari-nome 400ms ease-out 450ms both;
+}
+.app-loader__barra::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--loader-testo);
+  animation: loader-scorri 1400ms ease-in-out infinite;
+}
+.app-loader__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@keyframes loader-appari { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
+@keyframes loader-appari-nome { from { opacity: 0; } to { opacity: 1; } }
+@keyframes loader-oscilla { from { rotate: -3deg; } to { rotate: 3deg; } }
+@keyframes loader-scorri { from { translate: -100% 0; } to { translate: 250% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-loader__bandiera, .app-loader__nome, .app-loader__barra { animation: none; }
+  .app-loader__barra::after { animation: none; width: 100%; opacity: 0.5; }
+}
