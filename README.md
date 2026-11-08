@@ -22,7 +22,7 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 - **Consultare gli eventi:** una home con i prossimi eventi appesi a un festone, un catalogo con ricerca e un'agenda mese per mese.
 - **Filtrare e ordinare:** per testo libero (senza distinzione di accenti), città e periodo (tutti, in corso, in arrivo: gli eventi terminati non compaiono), e per data, nome o città, in vista a griglia o a elenco.
 - **Segnalare un evento:** un modulo validato con selettori di data e suggerimenti per le città. La segnalazione di un utente anonimo resta nascosta agli altri finché non è approvata; chi l'ha inviata la vede come *in attesa* sotto «Le mie» sul proprio dispositivo. Il modulo avverte che la segnalazione sarà visibile a tutti solo dopo la verifica degli amministratori.
-- **Revisionare le segnalazioni:** `Admin` ed `Editor` approvano o rifiutano le segnalazioni in blocco su `/gestione/revisione` e possono ritirare un evento già approvato. Gli eventi segnalati da `Admin` o `Editor` sono pubblicati subito. «Gestione» è nel menu ⋮ della barra in alto, con il numero delle segnalazioni da moderare sul pulsante, e `Admin` ed `Editor` ricevono un riepilogo via email (vedi [Moderazione](http://docs-sagre-eventi.aepserver.it/moderazione)).
+- **Revisionare le segnalazioni:** `Admin` ed `Editor` approvano o rifiutano le segnalazioni in blocco su `/gestione/revisione` e possono ritirare un evento già approvato. Gli eventi segnalati da `Admin` o `Editor` sono pubblicati subito. «Gestione» è nel menu ⋮ della barra in alto, con il numero delle segnalazioni da moderare sul pulsante, e `Admin` ed `Editor` ricevono un riepilogo via email (vedi [Moderazione](http://wiki.aepserver.it/sagreeventi/moderazione)).
 - **Gestire gli utenti:** `Admin` crea, modifica (email, reset della password, ruoli) ed elimina gli utenti su `/gestione/utenti`. L'ultimo `Admin` non può essere rimosso.
 - **Modificare gli eventi:** solo dopo l'accesso come `Admin` o `Editor`. Le modifiche anonime a eventi esistenti sono rifiutate dall'API (`403`).
 - **Conclusione automatica:** il server conclude un evento quando la data di fine è passata. Un evento concluso non può più essere modificato da nessuno e l'API non ha la cancellazione.
@@ -37,14 +37,14 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 
 | Documento | Contenuto |
 | --- | --- |
-| [Architettura](http://docs-sagre-eventi.aepserver.it/architettura) | Progetti della soluzione e motivazioni dello stack |
-| [Moderazione](http://docs-sagre-eventi.aepserver.it/moderazione) | Stati degli eventi e avviso via email ai moderatori |
-| [Protezione anti-bot](http://docs-sagre-eventi.aepserver.it/anti-bot) | Prova di lavoro sull'invio delle segnalazioni |
-| [Sincronizzazione e PWA](http://docs-sagre-eventi.aepserver.it/sincronizzazione-pwa) | Offline-first, installazione e aggiornamenti |
-| [API](http://docs-sagre-eventi.aepserver.it/api) | Endpoint e forma dell'evento |
-| [Sviluppo](http://docs-sagre-eventi.aepserver.it/sviluppo) | Build, test e migrazioni del database |
-| [Configurazione](http://docs-sagre-eventi.aepserver.it/configurazione) | Impostazioni e variabili d'ambiente |
-| [Deployment](http://docs-sagre-eventi.aepserver.it/deployment) | Immagini Docker, compose e nginx; procedura passo passo in [DEPLOY.md](DEPLOY.md) |
+| [Architettura](http://wiki.aepserver.it/sagreeventi/architettura) | Progetti della soluzione e motivazioni dello stack |
+| [Moderazione](http://wiki.aepserver.it/sagreeventi/moderazione) | Stati degli eventi e avviso via email ai moderatori |
+| [Protezione anti-bot](http://wiki.aepserver.it/sagreeventi/anti-bot) | Prova di lavoro sull'invio delle segnalazioni |
+| [Sincronizzazione e PWA](http://wiki.aepserver.it/sagreeventi/sincronizzazione-pwa) | Offline-first, installazione e aggiornamenti |
+| [API](http://wiki.aepserver.it/sagreeventi/api) | Endpoint e forma dell'evento |
+| [Sviluppo](http://wiki.aepserver.it/sagreeventi/sviluppo) | Build, test e migrazioni del database |
+| [Configurazione](http://wiki.aepserver.it/sagreeventi/configurazione) | Impostazioni e variabili d'ambiente |
+| [Deployment](http://wiki.aepserver.it/sagreeventi/deployment) | Immagini Docker, compose e nginx; procedura passo passo in [DEPLOY.md](DEPLOY.md) |
 
 ## Per iniziare
 
