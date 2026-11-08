@@ -60,6 +60,83 @@ public class EventoMappingsTests
     }
 
     [Fact]
+    public void ApplyFrom_CopiaIndirizzoECoordinateEPulisceLoSpazio()
+    {
+        var evento = new Evento { Id = "m-1" };
+        var dto = Dto();
+        dto.Indirizzo = "  Via Roma 12  ";
+        dto.Latitudine = 45.4642m;
+        dto.Longitudine = 9.19m;
+
+        evento.ApplyFrom(dto);
+
+        Assert.Equal("Via Roma 12", evento.Indirizzo);
+        Assert.Equal(45.4642m, evento.Latitudine);
+        Assert.Equal(9.19m, evento.Longitudine);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void ApplyFrom_UnIndirizzoVuotoDiventaNull(string? indirizzo)
+    {
+        var evento = new Evento { Id = "m-1", Indirizzo = "Via vecchia" };
+        var dto = Dto();
+        dto.Indirizzo = indirizzo;
+
+        evento.ApplyFrom(dto);
+
+        Assert.Null(evento.Indirizzo);
+    }
+
+    [Fact]
+    public void ApplyFrom_SenzaCoordinateAzzeraQuelleEsistenti()
+    {
+        var evento = new Evento { Id = "m-1", Latitudine = 45m, Longitudine = 9m };
+
+        evento.ApplyFrom(Dto());
+
+        Assert.Null(evento.Latitudine);
+        Assert.Null(evento.Longitudine);
+    }
+
+    [Fact]
+    public void ToDto_ProiettaIndirizzoECoordinate()
+    {
+        var evento = Dto().ToEntity();
+        evento.Indirizzo = "Via Roma 12";
+        evento.Latitudine = 45.4642m;
+        evento.Longitudine = 9.19m;
+
+        var dto = EventoMappings.ToDto.Compile()(evento);
+
+        Assert.Equal("Via Roma 12", dto.Indirizzo);
+        Assert.Equal(45.4642m, dto.Latitudine);
+        Assert.Equal(9.19m, dto.Longitudine);
+    }
+
+    [Fact]
+    public void ToDtoPubblico_MostraLaPosizioneSoloSeApprovato()
+    {
+        var evento = Dto().ToEntity();
+        evento.Indirizzo = "Via Roma 12";
+        evento.Latitudine = 45.4642m;
+        evento.Longitudine = 9.19m;
+
+        evento.Stato = StatoModerazione.Approvato;
+        var approvato = EventoMappings.ToDtoPubblico.Compile()(evento);
+        evento.Stato = StatoModerazione.Rifiutato;
+        var ritirato = EventoMappings.ToDtoPubblico.Compile()(evento);
+
+        Assert.Equal("Via Roma 12", approvato.Indirizzo);
+        Assert.Equal(45.4642m, approvato.Latitudine);
+        Assert.Null(ritirato.Indirizzo);
+        Assert.Null(ritirato.Latitudine);
+        Assert.Null(ritirato.Longitudine);
+    }
+
+    [Fact]
     public void ToDto_ProiettaStatoEMotivo()
     {
         var evento = Dto().ToEntity();
