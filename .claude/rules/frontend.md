@@ -1,11 +1,14 @@
 ---
 paths:
   - "**/*.{ts,html,css,scss}"
+  - "**/angular.json"
+  - "**/tsconfig*.json"
 ---
 
 # Regole Frontend (Angular, TypeScript & UI)
 
-> Richiede `core.md` (contratto con il backend, licenze, workflow). Per la sicurezza vedi anche `security.md`.
+> Versione 1.6 — ultima revisione: 2026-11-10.
+> Richiede `core.md` (contratto con il backend, licenze, workflow). Per la sicurezza vedi anche `security.md` e `security-frontend.md`.
 
 ## 1. Stack Frontend
 - **Framework:** Angular (ultima versione stabile compatibile con PrimeNG; minimo 20, dove zoneless è stabile). Componenti Standalone e Signals in modo nativo.
@@ -26,8 +29,8 @@ paths:
 - **Stato:** `signal()`, `computed()`, `linkedSignal()` per stato locale e globale. `effect()` solo per effetti collaterali (log, `localStorage`, DOM), mai per propagare stato da un signal a un altro. RxJS solo per HTTP e flussi asincroni complessi. Usa `takeUntilDestroyed` per le sottoscrizioni manuali. Vietati i `subscribe` annidati: usa gli operatori (`switchMap`, `concatMap`...).
 - **`httpResource` / `resource`:** permessi solo per letture semplici legate a signal e solo se la versione installata li dà come stabili. Per tutto il resto (mutazioni, interceptor complessi) usa `HttpClient` con il client generato.
 - **Template e Dependency Injection:** vedi §13 (control flow, `@defer`, `inject()`).
-- **Form:** Typed Reactive Forms per i form non banali. Gli errori di validazione server-side (per campo) vanno mappati sui rispettivi controlli.
-- **Routing:** lazy loading delle route per feature (`loadComponent` / `loadChildren`), sempre, anche senza micro frontend: è già ciò che rende veloce il caricamento iniziale. I guard servono alla UX, mai come unico controllo di sicurezza. I micro frontend sono un'opzione ulteriore, non il default (§12).
+- **Form:** Typed Reactive Forms per i form non banali. Gli errori di validazione server-side (per campo) vanno mappati sui rispettivi controlli. **Signal Forms:** non si usano finché la versione installata non li dà come stabili (verifica su angular.dev); poi si propongono per i form nuovi, senza migrare quelli esistenti (`core.md` §6.18).
+- **Routing:** lazy loading delle route per feature (`loadComponent` / `loadChildren`), sempre, anche senza micro frontend: è già ciò che rende veloce il caricamento iniziale. I guard servono alla UX, mai come unico controllo di sicurezza. I micro frontend sono un'opzione ulteriore, non il default (§12). **PREFER:** guard e resolver funzionali (`CanActivateFn`, `ResolveFn`); `canMatch` per non caricare il chunk di una route non consentita; `withComponentInputBinding()` per ricevere parametri di route e query string come `input()` invece di leggere `ActivatedRoute`.
 - **Client API:** preferisci generare client e modelli TypeScript dallo schema OpenAPI (NSwag / OpenAPI Generator) invece di riscriverli a mano. I file generati stanno in una cartella dedicata e riconoscibile (es. `api/generated/`) e **non si modificano mai a mano**: ogni cambiamento passa dallo schema o dalla configurazione del generatore. Il comando di generazione è uno script npm e sta nel `CLAUDE.md` (tabella Comandi); il client si rigenera a ogni modifica dello schema.
 - **Gestione errori HTTP:** `HttpInterceptorFn` funzionale registrato con `provideHttpClient(withInterceptors([...]))`. I messaggi globali passano dal `MessageService` di PrimeNG (Toast). Gli errori di validazione per campo vanno invece mostrati sul form, non nel toast. 401/403 hanno un trattamento dedicato: redirect al login; refresh del token solo se il progetto prevede il rinnovo (vedi `security.md`).
   - **Trattamento per codice** (contratto in `core.md` §1, mappatura server in `backend-app.md` §4.1): l'interceptor legge il `ProblemDetails` e traduce le chiavi con i parametri ricevuti (§4.2).
@@ -42,14 +45,16 @@ paths:
 - **Propagazione del `traceId`:** un `HttpInterceptorFn` aggiunge a ogni richiesta verso l'API un identificativo di correlazione, così il backend lo ritrova nei log (`core.md` §5). Il meccanismo si deduce dal logging concordato per il progetto (campo "Logging" del `CLAUDE.md`): con OpenTelemetry l'header W3C `traceparent`, altrimenti `X-Trace-Id` (UUID). Lo stesso identificativo compare nel toast di errore 500 (copiabile) e nei log di errore del frontend (§7). Mai dati personali nell'identificativo.
 - **Configurazione a runtime:** l'app gira in container, quindi l'URL dell'API e le impostazioni per ambiente NON sono incorporate nella build. Si leggono da un `config.json` servito con l'app e caricato con `provideAppInitializer`. Una sola immagine per tutti gli ambienti.
 - **Compilatore:** in `tsconfig` abilita `strict`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `noFallthroughCasesInSwitch`; in `angularCompilerOptions` abilita `strictTemplates`, `strictInjectionParameters`, `strictInputAccessModifiers`.
-- **Struttura cartelle:** `core/` (singleton, interceptor, guard), `shared/` (componenti riusabili), `features/<nome>/` (lazy loaded). Niente cartelle per tipo tecnico (`components/`, `services/`) a livello radice. **Confini:** una feature non importa da un'altra feature; `core/` e `shared/` non importano da `features/`. Il codice usato da più feature si estrae in `shared/`. Il rispetto dei confini è verificato dal lint (regola ESLint, es. `no-restricted-imports`, configurata nel progetto) e una violazione fa fallire `npm run lint`. **Pagine dentro una feature:** se la cartella di una feature contiene più pagine, ogni pagina ha una sottocartella con il nome del componente (`features/<area>/<pagina>/<pagina>.component.ts`); se contiene una sola pagina, i file stanno direttamente nella cartella della feature (`features/<area>/<area>.component.ts`).
+- **Struttura cartelle:** `core/` (singleton, interceptor, guard), `shared/` (componenti riusabili), `features/<nome>/` (lazy loaded). Niente cartelle per tipo tecnico (`components/`, `services/`) a livello radice. **Confini:** una feature non importa da un'altra feature; `core/` e `shared/` non importano da `features/`. Il codice usato da più feature si estrae in `shared/`. Il rispetto dei confini è verificato dal lint (regola ESLint, es. `no-restricted-imports`, configurata nel progetto) e una violazione fa fallire `npm run lint`.
+- **Cartella per elemento:** ogni componente (pagine incluse), servizio o altro file non di componente sta in una cartella con il nome dell'elemento (kebab-case), che contiene **tutti** i suoi file (`.ts`, `.spec.ts`, `.html`, `.css`), anche quando è l'unico elemento della feature. Esempi: `core/eventi-api/eventi-api.service.ts` e `core/eventi-api/eventi-api.service.spec.ts`, non i file sciolti direttamente in `core/`; `features/<area>/<pagina>/<pagina>.component.ts`, anche con una sola pagina nella feature. Le cartelle stanno dentro la feature (o in `core/`, `shared/`).
+  - **Progetti esistenti:** la regola vale anche per il codice già presente, ma lo spostamento dei file va proposto come passo di refactoring nel piano (`PIANO.md`), con conferma, e fatto con gli import aggiornati in un commit `refactor` a sé (`git.md`).
 - **Naming:** TypeScript camelCase per variabili/metodi e PascalCase per classi/interfacce. File in kebab-case. Per i servizi e gli altri file non di componente segui il default della CLI Angular installata.
 - **File di un componente (pagine e componenti riusabili):** ogni componente ha il suffisso `.component` (pagine incluse) e **file separati** per logica, template e stili, con lo stesso nome base, nella stessa cartella: `nome-pagina.component.ts`, `nome-pagina.component.html`, `nome-pagina.component.css` (o `.scss` se il progetto lo usa) e, quando si scrivono gli unit test (§10), `nome-pagina.component.spec.ts`. Il `.ts` contiene solo la logica: vietati `template:` e `styles:` inline (anche per componenti piccoli), il decoratore usa `templateUrl: './nome-pagina.component.html'` e `styleUrl: './nome-pagina.component.css'` (singolare, stringa). Il file di stili si crea **solo se il componente ha stili propri**: niente file vuoti e niente `styleUrl` senza stili. Se la CLI installata genera nomi diversi, si rinominano i file generati. Una deroga, se serve, sta nel `CLAUDE.md`.
   - **Template inline da spostare** (codice esistente o refactoring): il contenuto del template non cambia nello spostamento in `.html`; con `<pre>` e `<textarea>` il cui contenuto sta tra i tag, dove l'indentazione conta, si controlla che il testo reso resti identico. Queste regole valgono sul codice nuovo come su migrazioni e refactoring.
 - **Lint e formattazione:** `angular-eslint` + Prettier. Il codice non deve introdurre warning.
 - **Node e npm fissati:** versione di Node dichiarata in `.nvmrc` (LTS attiva) e in `engines` di `package.json`, con `engine-strict=true` in `.npmrc`; stessa versione nel Dockerfile e nella CI. `npm ci` e lock file committato; mai `npm install` che modifica il lock senza che sia lo scopo del compito.
 - **Aggiornamenti di Angular:** solo con `ng update` (mai modificare a mano le versioni dei pacchetti `@angular/*`, che devono restare allineate). L'aggiornamento di versione maggiore è un compito a sé, in un branch dedicato: Claude lo propone e chiede conferma, perché può toccare PrimeNG, TypeScript e le API deprecate (vedi anche "Zoneless"). Le versioni minori e patch seguono Dependabot/Renovate.
-- **Performance:** budget dei bundle in `angular.json`, lazy loading delle route, `@defer` per i componenti pesanti, `NgOptimizedImage` per le immagini, font self-hosted. Per ridurre il tempo di caricamento si parte da questi strumenti; i micro frontend (§12) non servono allo scopo da soli.
+- **Performance:** budget dei bundle in `angular.json`, lazy loading delle route, `@defer` per i componenti pesanti, `NgOptimizedImage` per le immagini, font self-hosted. Per ridurre il tempo di caricamento si parte da questi strumenti (non dai micro frontend, §12).
 
 ---
 
@@ -61,7 +66,7 @@ paths:
 - **Scala tipografica con nomi semantici:** i token di testo hanno nomi di ruolo (per esempio `title`, `subtitle`, `body`, `caption`), non valori come `font-size-3`. Ogni ruolo ha una sola dimensione, definita nei token e usata da tutti i componenti.
 - **Altezza di riga per ruolo:** i titoli hanno un'altezza di riga più stretta del testo corrente, e il testo lungo (corpo) ha un'altezza di riga più ampia, per leggibilità. I valori sono token, come le dimensioni.
 - **Misura massima del testo:** il testo continuo ha una larghezza massima leggibile (in caratteri per riga) definita come token; i contenitori di testo lungo la rispettano anche su schermi larghi.
-- **Stati dei componenti:** `hover`, `focus`, `active`, `disabled` definiti, con transizioni fluide (`transition: all 200ms ease`, durata massima 200ms).
+- **Stati dei componenti:** `hover`, `focus`, `active`, `disabled` definiti, con transizioni fluide (solo sulle proprietà che cambiano, per esempio `transition: background-color 200ms ease`, mai `transition: all`; durata massima 200ms).
 - **Feedback e validazione:** campi errati con bordo colorato, icona e messaggio contestuale. Submit disabilitato se il form è invalido, oppure spinner durante l'invio (evita doppi invii).
 - **Loading:** `p-skeleton` al posto di spinner generici per tabelle e liste.
 - **Empty state ed error state:** ogni lista/tabella ha uno stato vuoto (messaggio + CTA) e uno stato di errore con pulsante "Riprova".
@@ -75,6 +80,7 @@ paths:
   - Navigazione da tastiera completa (`Tab`, `Enter`, `Escape`), gestione corretta del focus nei dialog, skip link.
   - `aria-live` per toast ed errori; area di tocco minima 44px.
   - Verifica con axe / Lighthouse.
+  - **PREFER:** per focus trap, `LiveAnnouncer` e navigazione con frecce nei componenti propri, `@angular/cdk/a11y` (MIT; si dichiara come dipendenza, `core.md` §6.8); i componenti PrimeNG li gestiscono già.
 
 ---
 
@@ -101,15 +107,15 @@ paths:
 ---
 
 ## 5. Autorizzazione nella UI
-> Vale solo se il progetto prevede autenticazione/autorizzazione (vedi `security.md` e il `CLAUDE.md`); altrimenti non si applica.
+> Vale solo se il progetto prevede autenticazione/autorizzazione (vedi `security-backend.md` e il `CLAUDE.md`); altrimenti non si applica.
 
 - Mostra, nascondi o disabilita azioni in base ai permessi tramite una direttiva strutturale o un `computed` su un `AuthService` basato su signal (es. `*appHasPermission`). Il controllo vero resta sempre sul server: la UI è solo UX.
 - I permessi arrivano dal profilo (claim o endpoint dedicato), mai dedotti dal frontend.
 - Una pagina negata mostra la pagina di sistema 403, non un errore generico.
-- **Sessione con cookie o BFF** (scelta di `security.md`, nel `CLAUDE.md`):
+- **Sessione con cookie o BFF** (scelta di `security-backend.md`, nel `CLAUDE.md`):
   - **Credenziali:** le chiamate all'API usano `withCredentials` solo verso l'origine concordata, preferibilmente la stessa dell'SPA; nessun token in `localStorage` o `sessionStorage`.
   - **CSRF:** con i cookie le richieste mutanti portano il token antiforgery (`withXsrfConfiguration`, con nome di cookie e header concordati con il backend); mai richieste mutanti senza token.
-  - **Sessione scaduta:** su 401 la route corrente viene salvata, l'utente va al login e, dopo l'accesso, torna alla route salvata; il ritorno accetta solo percorsi locali, mai URL esterni (open redirect, vedi `security.md`).
+  - **Sessione scaduta:** su 401 la route corrente viene salvata, l'utente va al login e, dopo l'accesso, torna alla route salvata; il ritorno accetta solo percorsi locali, mai URL esterni (open redirect, vedi `security-backend.md`).
 
 ---
 
@@ -132,7 +138,7 @@ paths:
 - **Conversione verso il contratto di paginazione:** `p-table` lavora con `first` (indice da 0) e `rows`, mentre il contratto (`core.md` §1) usa `pageNumber` da 1, `pageSize`, `sortBy` e `sortDirection`. La conversione (`pageNumber = first / rows + 1`, `sortField`/`sortOrder` → `sortBy`/`sortDirection`) sta in **un solo punto condiviso** (funzione o servizio in `shared/`), usato da tutte le tabelle; i componenti non la rifanno a mano.
 - **Export/import:** il file lo genera il backend (vedi `backend.md`) e il frontend lo scarica; generazione client-side solo per piccoli dataset. Librerie solo gratuite e con licenza permissiva.
 - **Stato globale per app grandi:** se più feature condividono stato complesso, usa servizi con signal oppure NgRx SignalStore (MIT). Non introdurre NgRx classico (store/effects/reducers) per stato semplice.
-- **SSR / hydration:** non usarli di default (app interne dietro login). Valutali solo per pagine pubbliche con esigenze SEO, e dichiarali nel `CLAUDE.md` di progetto.
+- **SSR / hydration:** non usarli di default (app interne dietro login). Valutali solo per pagine pubbliche con esigenze SEO, e dichiarali nel `CLAUDE.md` di progetto. Se adottati: niente accesso diretto a `window`, `document`, `localStorage` nel costruttore o nel codice di classe (si usa `afterNextRender`/`afterEveryRender` o `isPlatformBrowser`); nessun segreto né dato di sessione nello stato trasferito al client; i test E2E girano anche sul build SSR.
 - **PWA / offline:** solo se richiesto dal progetto; in tal caso definisci cosa è disponibile offline e come si risolvono i conflitti alla risincronizzazione.
 - **SEO (solo pagine pubbliche):** `Title` e `Meta` per route, `lang` sul tag `<html>`, canonical, HTML semantico.
 - **Browser supportati:** ultime 2 versioni stabili di Chrome, Edge, Firefox e Safari, salvo diversa indicazione nel `CLAUDE.md`.
@@ -140,7 +146,7 @@ paths:
 ---
 
 ## 9. Sicurezza Frontend
-Le regole (niente `innerHTML` né `bypassSecurityTrust*` senza sanitizzazione, nessun dato sensibile in `localStorage`, URL o console, CSP con nonce, Trusted Types, `postMessage`, source map, service worker) sono nella sezione "Frontend" di `security.md`, che è l'unica fonte: qui non si ripetono. Se il progetto non include `security.md`, Claude lo segnala e chiede se importare almeno quella sezione.
+Le regole di sicurezza del frontend sono in `security-frontend.md`, che è l'unica fonte: qui non si ripetono. Se il progetto non include `security.md`, Claude lo segnala e chiede se importare almeno quella sezione.
 
 ---
 
@@ -157,7 +163,7 @@ Le regole (niente `innerHTML` né `bypassSecurityTrust*` senza sanitizzazione, n
 - **Query dei test:** nei test dei componenti e in Playwright si cercano gli elementi per ruolo, etichetta o testo accessibile (`getByRole`, `getByLabel`), non per classi CSS; `data-testid` solo se non c'è alternativa accessibile.
 - **Dati E2E:** ogni test crea i propri dati tramite API o seed dedicato dell'ambiente di test e non dipende da dati lasciati da altri test; utenti di test sintetici con credenziali da variabili d'ambiente (mai password reali nel repository). L'ambiente E2E gira sul compose del progetto con un database di test separato e azzerabile; istanza e modalità di quel database si **chiedono ogni volta**, senza presumerle (per l'istanza di prova del backend vedi `backend-app.md` §4.5).
 - **Stabilità:** nessuno `waitForTimeout`; si attende uno stato osservabile (elemento, risposta di rete). Trace e screenshot di Playwright salvati solo in caso di fallimento.
-- **Accessibilità automatica:** `@axe-core/playwright` sulle pagine principali, con zero violazioni gravi (`core.md` §4), verificato nei flussi E2E con tema light e dark. Licenza da verificare al primo uso (`core.md` §3).
+- **Accessibilità automatica:** i flussi E2E con axe (`core.md` §4) si ripetono con tema light e dark.
 - **Temi e lingue:** i flussi principali sono verificati almeno con la lingua di default e un secondo tema; le chiavi di traduzione mancanti fanno fallire il test, non mostrano la chiave grezza.
 - **Chiusura di un lavoro frontend:** prima di dichiararlo concluso, `npm test` e la build di produzione (`npm run build`) sono verdi, insieme a lint e formattazione.
 - **Verifica di un refactoring senza cambi di comportamento** (spostamento o separazione di file, rinomine): si confronta la build di produzione senza hash nei nomi prima e dopo, con `ng build --configuration production --output-hashing none --output-path <cartella fuori dal repository>` e `diff -r` tra le due uscite. Una build identica byte per byte dimostra che il codice compilato non è cambiato. Se cambiano solo i nomi dei chunk o delle variabili minificate (per esempio dopo uno spostamento di cartelle), lo si dichiara e si prende la build nuova come riferimento.
@@ -173,17 +179,18 @@ Le regole (niente `innerHTML` né `bypassSecurityTrust*` senza sanitizzazione, n
 
 ## 12. Micro Frontend (opzionale, solo su conferma)
 Non sono il default. Il caricamento a richiesta per feature si ottiene già con il lazy loading delle route (§2) e con `@defer`; i micro frontend servono per un altro scopo: **rilasci e team indipendenti** su un'app molto grande. Aggiungono complessità e non rendono l'app più veloce di per sé (anzi: più richieste di rete, dipendenze condivise da allineare).
-- **Quando valutarli:** più team che rilasciano in modo indipendente, parti dell'app con cicli di vita diversi, app grande dove il build unico è diventato un freno. Per una sola squadra o un'app piccola/media si usano lazy loading, `@defer` e budget (§2), e Claude lo dice.
+- **Quando valutarli:** più team che rilasciano in modo indipendente, parti dell'app con cicli di vita diversi, app grande dove il build unico è diventato un freno. Per una sola squadra o un'app piccola/media Claude lo dice e non li propone.
 - **Decisione ogni volta, mai presunta:** Claude propone i micro frontend solo se ricorrono i motivi sopra, con pro e contro, e attende l'ok (`core.md` §6.5 e §6.18). La scelta va nel `CLAUDE.md` (campo "Micro frontend") con un ADR (`core.md` §5b). In un progetto esistente non si migra di iniziativa (§11 e `core.md` §6.12).
 - **Tecnologia:** **Native Federation** (`@angular-architects/native-federation`, licenza MIT da verificare al primo uso, `core.md` §3), compatibile con il builder esbuild di Angular; Module Federation basata su webpack solo se già presente nel progetto. Compatibilità con la versione di Angular e di PrimeNG installate, e API del pacchetto, si verificano al primo uso (`core.md` §6.13), non a memoria.
 - **Struttura:** una shell (host) che carica i remote tramite lazy loading delle route; ogni remote è un'app Angular a sé con le stesse regole di questo file (standalone, signals, OnPush, file separati per componente, test). Angular, PrimeNG, RxJS e la libreria di traduzione sono dipendenze condivise come singleton, con versioni compatibili e bloccate; il tema (§4.1), il `TranslationService` (§4.2) e l'autenticazione (§5) vivono nella shell e sono condivisi, mai duplicati nei remote.
 - **Confini:** valgono le regole di §2: un remote non importa da un altro remote. Il codice comune sta in una libreria condivisa o nella shell. La comunicazione tra remote passa da servizi condivisi basati su signal o da contratti espliciti, mai da dipendenze dirette.
 - **Docker e configurazione a runtime:** gli URL dei remote si leggono da configurazione a runtime (come `config.json`, §2), non incorporati nella build. Una sola immagine per tutti gli ambienti resta valida per ogni applicazione (shell e ciascun remote); il numero di immagini e di servizi nel compose si concorda con l'utente (`docker.md`).
-- **Sicurezza:** CSP e origini dei remote in allow-list esplicita (`security.md`); un remote caricato da origine non fidata è vietato. Gli stessi controlli di tipo `innerHTML`/`bypassSecurityTrust*` valgono nei remote.
+- **Sicurezza:** CSP e origini dei remote in allow-list esplicita (`security-frontend.md`); un remote caricato da origine non fidata è vietato. Gli stessi controlli di tipo `innerHTML`/`bypassSecurityTrust*` valgono nei remote.
 - **Test:** unit test in ogni remote (§10); E2E Playwright sulla shell con i remote reali per i flussi principali.
 
 ## 13. Linee guida per i template
 - **Control flow moderno (MUST):** nei template solo la sintassi nativa (`@if`, `@for` con `track`, `@switch`); vietati `*ngIf` / `*ngFor` / `*ngSwitch`. Usa `@defer` per i componenti pesanti.
+- **`@let` (PREFER):** per un valore derivato usato più volte nel template (`@let user = user$ | async;`); la logica non banale resta in `computed()` nel componente.
 - **Async Pipe:** per mostrare nel template un Observable si usa l'`async` pipe, senza `subscribe` manuali nel componente (nessuna sottoscrizione da chiudere a mano).
 - **Servizi con un unico scopo:** ogni servizio ha una sola responsabilità; un servizio che fa più cose si divide.
 - **`inject()` (MUST):** la Dependency Injection avviene con `inject(MyService)`, non con l'iniezione tramite costruttore.
@@ -198,6 +205,7 @@ Non sono il default. Il caricamento a richiesta per feature si ottiene già con 
 - **Niente `ngClass` e `ngStyle`:** classi e stili si associano con i binding nativi `[class.nome]` / `[class]` e `[style.proprietà]` / `[style]`. Valgono comunque i vincoli sui colori e sugli stili di §3 e §4.1.
 
 ## 15. Migliori pratiche di Angular
+- **Guida ufficiale di Angular (PREFER):** per tutto ciò che queste regole non disciplinano, lo sviluppo Angular segue le best practice ufficiali (guida di stile e documentazione su angular.dev). Si verificano nella documentazione della versione installata nel progetto, non a memoria (`core.md` §6.13). In caso di conflitto prevalgono le regole del kit e il `CLAUDE.md`; una best practice che introduce una scelta nuova per il progetto (pattern, libreria, struttura non presente) si propone con il motivo e si attende il via, come da `core.md` §6.18.
 - **Componenti standalone (MUST):** sempre componenti, direttive e pipe standalone; nessun `NgModule`.
 - **Signal per lo stato:** la gestione dello stato usa i signal (`signal()`, `computed()`, `linkedSignal()`); dettagli in §2, voce "Stato".
 - **Lazy loading delle route per feature:** ogni feature si carica a richiesta con `loadComponent` / `loadChildren`; dettagli (guard, rapporto con i micro frontend) in §2, voce "Routing".
