@@ -2,7 +2,103 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-10
+
+### Regole del template aggiornate e confrontate con i `.bak`
+
+**Perché:** `/kit:aggiorna-regole` ha portato `.claude/rules*/` alle versioni del template (core 3.37, git 1.4, frontend 1.6, ecc.); serviva sapere se i vecchi file contenessero qualcosa di perso.
+**Cosa / Dove:** aggiornati 12 file in `.claude/rules/` e `.claude/rules-optional/` (con copie `.md.bak` accanto), aggiunto `.claude/rules/lavoro.md`; creato `CONFRONTO-REGOLE-BAK.md` (root, non da committare) con le differenze file per file.
+**Verifica:** nessun codice toccato, nessuna build. Confronto fatto con `diff` e `git diff --word-diff`.
+**Note:** nei `.bak` nulla di specifico del progetto.
+
+### Riallineamento di `CLAUDE.md` alle regole 2026-11-10 e controlli sul codice
+
+**Perché:** i nuovi `core.md` e `git.md` citano `lavoro.md` e la voce «Commit di fila, massimo per lotto».
+**Cosa / Dove:** `CLAUDE.md`: `lavoro` nell'elenco dei moduli; voce «Commit di fila, massimo per lotto: 5» (scelta del 2026-11-10).
+**Verifica:** `grep` in `src/` (nessun `transition: all`, nessun `EnableSensitiveDataLogging`/`EnableDetailedErrors`); i tre compose di `deploy/` non hanno nessuna opzione di hardening (né `no-new-privileges`, né `read_only`, `cap_drop`, `pids_limit`).
+**Note:** hardening dei compose rimandato (server in aggiornamento di sicurezza), nessun compose toccato; il piano `docs/piani/PLAN-hardening-compose.md` è stato scritto e poi cancellato su richiesta, con promemoria in `CHECKLIST.md`. Cancellati i 12 file `.md.bak` (via libera del 2026-11-10).
+
+### Versione da tag: `build-info.mjs` legge `APP_VERSION` (passo 1 di `PLAN-versione-da-tag.md`)
+
+**Perché:** la versione mostrata in Informazioni veniva solo da `package.json` (sempre `1.0.0`). La CI dovrà passarla dal tag git `vX.Y.Z`.
+**Cosa / Dove:** `src/SagreEventi.Web/scripts/build-info.mjs`: usa la variabile d'ambiente `APP_VERSION` solo se è nel formato `X.Y.Z`, altrimenti `package.json`; il valore scartato è stampato con `JSON.stringify` nel warning (niente log injection).
+**Verifica:** script provato a mano con valore assente, valido, con spazi, vuoto, `1.2`, `v1.2.3`, `1.2.3-rc1`, tentativi di iniezione e a capo: sempre scartati o accettati come atteso. `npm test`: 361/361 verdi. Nessun test automatico nuovo (lo script non è importabile da Vitest).
+**Note:** da fare gli step 2-5 (Dockerfile, workflow, verifica con Docker, documentazione). Nessun commit.
+
+### Versione da tag: `ARG APP_VERSION` nel Dockerfile web (passo 2 di `PLAN-versione-da-tag.md`)
+
+**Perché:** la CI deve poter passare la versione del tag al build dell'immagine, perché `build-info.mjs` la legga.
+**Cosa / Dove:** `src/SagreEventi.Web/Dockerfile`: `ARG APP_VERSION` e `ENV APP_VERSION` nello stage `build` (non finiscono nell'immagine finale, che è lo stage nginx); commento d'uso in testa. La versione non è un segreto, quindi l'`ARG` è ammesso da `docker.md`.
+**Verifica:** `docker` non è installato su questo PC: l'immagine **non è stata buildata**. Da verificare nella CI o altrove (passo 4).
+
+### Versione da tag: il workflow parte sui tag `vX.Y.Z` (passo 3 di `PLAN-versione-da-tag.md`)
+
+**Perché:** la CI deve ricavare la versione dal tag e pubblicare le immagini anche come `X.Y.Z` (decisione del 2026-11-10).
+**Cosa / Dove:** `.github/workflows/build-push.yml`: trigger `push: tags: ['v*.*.*']`; `PUSH` vale anche per i tag; passo «Version from tag» in entrambi i job (il nome del tag passa da una variabile d'ambiente e deve essere esattamente `vX.Y.Z`, altrimenti il job fallisce); l'immagine web riceve `build-args: APP_VERSION`; sia `sagreeventi-api` sia `sagreeventi-web` ricevono il tag `X.Y.Z` oltre a `latest` e sha (la riga resta vuota, e quindi ignorata, fuori dai tag).
+**Verifica:** YAML letto correttamente con `js-yaml` (trigger, `PUSH`, passi dei due job); regex del tag provata su 6 valori (`v1.2.3` e `v10.20.30` ok; `v1.2`, `1.2.3`, `v1.2.3-rc1`, `v1.2.3;x` rifiutati). Pipeline **non avviata**: serve la tua conferma per ogni esecuzione.
+### Chiusura della sessione: piano concluso cancellato, piani di lavoro aggiornati
+
+**Perché:** `PLAN-versione-da-tag.md` aveva tutti i passi spuntati; per `CLAUDE.md` un piano concluso si cancella (la storia resta qui).
+**Cosa / Dove:** cancellato `docs/piani/PLAN-versione-da-tag.md` (non tracciato); aggiornati `piano-commit.md` (nuova sezione V1–V3 e decisione aperta sui file con modifiche miste), `PIANO.md` (ripartenza) e `CHECKLIST.md` (prima prova con un tag, tag solo su `main`, test di `build-info.mjs`; corretta la riga «periodi dei temi», che diceva ancora «dal passo 1»). Tenuto `PLAN-periodi-temi.md`: tutti i passi sono fatti ma i commit non ancora, e il worktree va riallineato.
+**Verifica:** solo documentazione; nessuna build né test. README, DEPLOY e wiki erano già aggiornati nel passo 5 (build e typecheck della wiki ok). Non toccati i `.claude/rules/*.bak` (non sono `.md`, in attesa di conferma in `CHECKLIST.md`).
+
+### Versione da tag: documentazione (passo 5 di `PLAN-versione-da-tag.md`)
+
+**Perché:** `README.md`, `DEPLOY.md` e la wiki dicevano ancora che la versione si cambia a mano in `package.json`.
+**Cosa / Dove:** `README.md` (funzionalità Informazioni e sezione su `build-info.mjs`), `DEPLOY.md` (workflow: tag `vX.Y.Z`, formato obbligatorio, tag `X.Y.Z` sulle immagini, il tag lo crea l'utente); wiki `docs/sagreeventi/informazioni.md`, `deployment.md`, `architettura.md` e `CHANGELOG.md` della wiki.
+**Verifica:** build e typecheck della wiki senza errori. Nessun commit, né nel repository né nella wiki (la wiki aveva già modifiche non committate).
+
+### Versione da tag: verifica locale (passo 4 di `PLAN-versione-da-tag.md`)
+
+**Verifica:** `APP_VERSION=2.3.4 npm run build -- --configuration production` ok, senza warning; il file generato contiene `2.3.4` e la stringa è nel bundle JS prodotto. Senza variabile, `npm test` torna a `1.0.0`: 361/361 test verdi. Build Docker **non** provata (Docker assente su questo PC): da verificare alla prima esecuzione della CI su un tag.
+
+**Note (passo 3):** un tag su un commit vecchio o fuori da `main` aggiorna comunque `latest`: oggi non c'è nessun controllo.
+
+## 2026-11-09
+
+### Riallineamento dei riferimenti di CLAUDE.md alle regole aggiornate
+
+**Perché:** il template ha diviso `security.md` in `security-backend.md` e `security-frontend.md` e ha aggiornato `core.md` alla v3.36 (sito di documentazione esterno, §5b). Alcuni rimandi di `CLAUDE.md` puntavano ancora alle sezioni nel posto sbagliato.
+**Cosa / Dove:** `CLAUDE.md`: elenco delle regole in apertura (aggiunti `security-backend` e `security-frontend`); riferimenti a JWT, deroga MFA, healthcheck, security headers, header `Server` e `Cache-Control: no-store` spostati su `security-backend.md`. Nessuna decisione cambiata.
+**Verifica:** solo modifica di documentazione; nessuna build né test richiesti.
+**Note:** `core.md` aggiornato alla v3.36 con `/kit:aggiorna-regole` (il precedente è in `core.md.bak`). Gli altri moduli erano già uguali al template.
+
+### Cartelle per elemento in `shared/` e per le pagine singole (P2 e P3 del refactoring frontend)
+
+**Perché:** `frontend.md` v1.1 chiede una cartella per ogni componente e per ogni pagina, anche quando è l'unica della feature (`PLAN-cartelle-frontend.md`, passi P2 e P3).
+**Cosa / Dove:** 4 componenti in `src/SagreEventi.Web/src/app/shared/<nome>/` (`empty-state`, `evento-card`, `festone`, `sync-status`). 9 pagine in `features/<area>/<pagina>/`: `agenda`, `amministrazione`, `gestione`, `home`, `informazioni`, `login`, `not-found`, `revisione`, `segnalazioni/mie-segnalazioni`. Con i rispettivi `.html`, `.css` e `.spec.ts`. Riscritti 47 import e lazy import in `app.routes.ts`. `features/eventi/` invariato.
+**Verifica:** build Angular senza errori né warning; 361 test frontend su 20 file; lint pulito. Diff di 106 righe, tutte import riscritti.
+**Note:** rinomine staged con `git mv`, nessun commit. Il suffisso `.component` viene tolto dal nome della cartella, come quello `.service` in `core/`.
+
+### Verifica finale del refactoring frontend e riferimenti aggiornati (P4)
+
+**Perché:** chiudere `PLAN-cartelle-frontend.md` con build, test e lint sul risultato finale, e togliere i percorsi vecchi dai file di configurazione e dalla documentazione.
+**Cosa / Dove:** `src/SagreEventi.Web/.prettierignore` (percorso di `build-info.generated.ts`, così Prettier lo ignora ancora) e `README.md` riga 100 (stesso percorso). `CHECKLIST.md`: nuovo punto sul worktree `feature/periodi-temi`, che lavora su file già spostati. I riferimenti nel `CHANGELOG.md` storico restano invariati.
+**Verifica:** build Angular, 361 test su 20 file e lint eseguiti dopo P3, senza modifiche al codice successive (si sono cambiati solo i due file di configurazione e il README).
+**Note:** nessun commit. Il refactoring è in working tree (rinomine in stage).
+
+### Regola dei confini del frontend semplificata
+
+**Perché:** il pattern per feature (`**/<nome>`) bloccava anche i nomi di pacchetti come `home` o `login`, e la configurazione non copriva `core/` e `shared/` verso `features/`, pur dichiarato in `CLAUDE.md`.
+**Cosa / Dove:** `src/SagreEventi.Web/eslint.config.js`: due blocchi, uno per `features/**` (non importa da `features/**`) e uno per `core/**` e `shared/**` (non importano da `features/**`). Rimosse le letture di `fs` e `path` e la lista delle feature.
+**Verifica:** lint pulito; import di prova bloccati (da feature ad altra feature, da `core/` e da `shared/` verso `features/`) e consentiti (da feature a `core/`, da `core/` a `shared/`, pacchetto `home`).
+**Note:** voce in `CHECKLIST.md` chiusa. Non ancora committato.
+
+### Cartelle per elemento in `core/` (P1 del refactoring frontend)
+
+**Perché:** `frontend.md` v1.1 chiede che ogni servizio o file non di componente stia nella propria cartella (`PLAN-cartelle-frontend.md`, passo P1).
+**Cosa / Dove:** 20 elementi di `src/SagreEventi.Web/src/app/core/` (con i relativi spec) spostati in cartelle con il nome dell'elemento senza suffisso `.service` (es. `core/eventi-api/eventi-api.service.ts`; `build-info-generated/` per il file generato). Riscritti 103 import nei file di `app/` (inclusi `app.component.*`, `app.config.ts`, `app.routes.ts`, che restano dove sono; spostati solo i loro percorsi di import). Aggiornati `tsconfig.worker.json`, `scripts/build-info.mjs` (percorso di output) e la riga 47 di `.gitignore`. In `eslint.config.js` il pattern dei confini tra feature è limitato a `**/features/<nome>/`, perché il nome `revisione` coincideva con la cartella `core/revisione/`.
+**Verifica:** build Angular senza errori, 361 test frontend su 20 file, lint pulito. Prova di lint: un import cross-feature resta bloccato, l'import da `core/` no. Diff di 206 righe, tutte import riscritti (nessun cambio di fine riga).
+**Note:** rinomine staged con `git mv`, nessun commit. Il primo tentativo ha lasciato `src/` a metà per una seconda esecuzione dello script; `src/` è stato riportato a HEAD (autorizzato dall'utente) e la migrazione rifatta. `build-info.generated.ts` è ignorato da git: spostato senza `git mv`. Restano da fare P2 (`shared/`) e P3 (pagine in `features/`).
+
 ## 2026-11-08
+
+### Piani conclusi cancellati e stato dei piani aggiornato
+
+**Perché:** `PLAN-documentazione-sito.md` era concluso (commit e PR #52 e #53 mergiati) e `piano-commit.md` non aveva più commit da fare, salvo il GPS, che è in `PLAN-gps.md`. I punti ancora validi sono stati spostati in `CHECKLIST.md`.
+**Cosa / Dove:** cancellati `docs/piani/PLAN-documentazione-sito.md` e `piano-commit.md` (non tracciati). Aggiornati `docs/piani/PLAN-gps.md` (in pausa, dopo i periodi dei temi), `docs/piani/PLAN-periodi-temi.md` (branch confermato, ripresa dal passo 1) e `CHECKLIST.md` (punti ripresi, snapshot EF scartato, nome del repository verificato).
+**Verifica:** solo documentazione; nessuna build richiesta. Verificato con `git worktree list` che non restano worktree, e con `git fetch --prune` che restano solo `develop` e `main` su `origin`.
+**Note:** modifica di `CHANGELOG.md` non ancora committata: andrà nel prossimo commit di documentazione, dopo conferma.
 
 ### Fonte della documentazione nella wiki
 
