@@ -45,7 +45,7 @@ describe('AppComponent navigation', () => {
         provideRouter([]),
         MessageService,
         ConfirmationService,
-        { provide: ThemeService, useValue: { tema: signal('light'), imposta: () => undefined } },
+        { provide: ThemeService, useValue: { tema: signal('light'), imposta: () => undefined, disponibile: () => true } },
         { provide: AuthService, useValue: { autenticato: signal(false), email: signal(null), logout: () => undefined } },
         { provide: AggiornamentoAppService, useValue: { disponibile: signal(false), aggiorna: () => undefined } },
         { provide: EventiStore, useValue: { mieSegnalazioni, online: signal(false), ultimaSincronizzazione: signal(null), sincronizza: () => Promise.resolve(true) } },
