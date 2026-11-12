@@ -2,11 +2,15 @@
 # Only the internal static server: HTTPS, the /api routing and the public entry point belong to the nginx of the host.
 # Build context: src/SagreEventi.Web, e.g.
 #   docker build -t sagreeventi-web src/SagreEventi.Web
+# Optional: --build-arg APP_VERSION=1.2.3 sets the version shown in the Informazioni page (default: package.json)
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# Release version (X.Y.Z) passed by the CI from the git tag; read by scripts/build-info.mjs, which ignores invalid values
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 RUN npm run build -- --configuration production
 
 FROM nginxinc/nginx-unprivileged:stable-alpine AS final

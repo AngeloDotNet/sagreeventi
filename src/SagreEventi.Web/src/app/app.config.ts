@@ -5,9 +5,9 @@ import { provideRouter, withComponentInputBinding, withInMemoryScrolling, withVi
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
-import { AuthService } from './core/auth.service';
-import { authInterceptor } from './core/auth.interceptor';
-import { ConfigService } from './core/config.service';
+import { AuthService } from './core/auth/auth.service';
+import { authInterceptor } from './core/auth-interceptor/auth.interceptor';
+import { ConfigService } from './core/config/config.service';
 import { SagrePreset } from './theme';
 
 export const appConfig: ApplicationConfig = {

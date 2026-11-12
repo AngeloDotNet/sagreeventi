@@ -3,8 +3,8 @@ import { RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { EventiStore } from '../../../core/eventi-store.service';
-import { PermessiService } from '../../../core/permessi.service';
+import { EventiStore } from '../../../core/eventi-store/eventi-store.service';
+import { PermessiService } from '../../../core/permessi/permessi.service';
 import {
   durataGiorni,
   formatDataLunga,
@@ -13,10 +13,10 @@ import {
   statoSeverity,
   TagSeverity,
   visualEvento,
-} from '../../../core/evento-utils';
-import { buildIcs, nomeFileSicuro, scaricaFile } from '../../../core/ics';
-import { primoLink, segmentaTesto } from '../../../core/link-utils';
-import { EmptyStateComponent } from '../../../shared/empty-state.component';
+} from '../../../core/evento-utils/evento-utils';
+import { buildIcs, nomeFileSicuro, scaricaFile } from '../../../core/ics/ics';
+import { primoLink, segmentaTesto } from '../../../core/link-utils/link-utils';
+import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-evento-detail',

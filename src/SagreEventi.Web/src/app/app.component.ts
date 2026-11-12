@@ -5,15 +5,15 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from './core/auth.service';
-import { EventiStore } from './core/eventi-store.service';
-import { PermessiService } from './core/permessi.service';
-import { RevisioneService } from './core/revisione.service';
-import { Tema, ThemeService, inStagione } from './core/theme.service';
-import { AggiornamentoAppService } from './core/aggiornamento-app.service';
-import { ErroreNavigazioneService } from './core/errore-navigazione.service';
-import { SincronizzazioneAutomaticaService } from './core/sincronizzazione-automatica.service';
-import { SyncStatusComponent } from './shared/sync-status.component';
+import { AuthService } from './core/auth/auth.service';
+import { EventiStore } from './core/eventi-store/eventi-store.service';
+import { PermessiService } from './core/permessi/permessi.service';
+import { RevisioneService } from './core/revisione/revisione.service';
+import { Tema, ThemeService, inStagione } from './core/theme/theme.service';
+import { AggiornamentoAppService } from './core/aggiornamento-app/aggiornamento-app.service';
+import { ErroreNavigazioneService } from './core/errore-navigazione/errore-navigazione.service';
+import { SincronizzazioneAutomaticaService } from './core/sincronizzazione-automatica/sincronizzazione-automatica.service';
+import { SyncStatusComponent } from './shared/sync-status/sync-status.component';
 
 /** Entries of the theme picker. */
 const TEMI_MENU: readonly { tema: Tema; etichetta: string; icona: string }[] = [
