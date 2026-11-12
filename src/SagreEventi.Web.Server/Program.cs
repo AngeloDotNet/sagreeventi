@@ -55,6 +55,7 @@ public class Program
         app.MapEventiEndpoints();
         app.MapRevisioneEndpoints();
         app.MapAdminUtentiEndpoints();
+        app.MapTemiEndpoints();
 
         app.Run();
     }

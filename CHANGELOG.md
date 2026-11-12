@@ -72,6 +72,41 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-09
 
+### Periodi dei temi: scheda «Temi» per l'Admin e chiusura del piano (passi 5 e 6)
+
+**Perché:** l'Admin deve poter cambiare i periodi dei temi stagionali senza una nuova versione. Chiude il piano `PLAN-periodi-temi`.
+**Cosa / Dove:** `features/temi/temi-admin/temi-admin.component.{ts,html,css,spec.ts}` (nuovo: quattro schede, una per periodo, con interruttore «Attivo», giorno e mese di inizio e fine per i temi a data fissa, giorni prima e dopo Pasqua con il messaggio sul ricalcolo annuale; errori del server mostrati accanto al campo indicato, errori generali in alto; dopo il salvataggio il frontend ricarica i periodi). `app.routes.ts` (route figlia `temi` di `gestione` con `richiedeAdmin`), `features/gestione/gestione/gestione.component.html` (voce «Temi» visibile solo a `eAdmin()`). `CLAUDE.md` (riga «Cache»: approvazione del 2026-11-02 anche per i periodi, chiave `periodi_tema`, tag `periodi-tema`). `README.md` (funzionalità dell'Admin per la scheda Temi).
+**Verifica:** `ng test`: 383 superati (22 file), di cui 10 nuovi per il componente; lint pulito; build di produzione senza errori; `dotnet test` della soluzione: 429 superati nel passo 3 (il backend non è cambiato in questi passi). Security review sulle modifiche del branch: nessuna segnalazione.
+**Note:** la scheda salva i quattro periodi insieme, come prevede l'endpoint. Il salvataggio invalida la cache del server, ma i visitatori già connessi vedono i nuovi periodi quando la cache scade (entro 5 minuti) o al caricamento successivo della pagina. Prettier con `tabWidth` 2 sui file nuovi; `app.component.ts`, `app.config.ts` e relativo spec non erano formattati prima e non sono stati riformattati. Gli integration test restano su SQLite per ora; il passaggio a SQL Server di prova è deciso e va fatto prima di chiudere il piano (vedi `CHECKLIST.md`).
+
+### Periodi dei temi: frontend legge i periodi dal server (passo 4)
+
+**Perché:** i periodi dei temi stagionali erano costanti nel codice (`STAGIONI`); ora l'app li legge da `GET /api/temi/periodi` e, se la lettura fallisce, usa i valori predefiniti (allineati al seed) così resta usabile offline.
+**Cosa / Dove:** `core/temi-api/temi-api.service.ts` (nuovo: modello `PeriodoTema` e client con `periodi()` e `salvaPeriodi()`, quest'ultimo per la sezione admin del passo 5), `core/theme/theme.service.ts` (`PERIODI_PREDEFINITI`; `inStagione` riceve i periodi e non usa più le costanti; `ThemeService.caricaPeriodi()` non blocca l'avvio, ignora risposte incomplete ed errori, e ricalcola il tema solo se l'utente non ne ha scelto uno; `disponibile()` per il menu), `app.config.ts` (avvio: `caricaPeriodi()` senza attesa), `app.component.ts` (menu dei temi filtrato con `disponibile()`).
+**Verifica:** build di produzione senza errori; lint pulito; 373 test frontend superati (`ng test`).
+**Note:** il seed di Halloween cambia da 15 ottobre – 2 novembre a 24–31 ottobre (decisione del 2026-11-02): lo spec di `theme.service` è aggiornato di conseguenza. Il Natale vale per entrambi i temi natalizi, e un periodo disattivato rende il tema non disponibile. Prettier applicato con `tabWidth` 2 per restare nello stile del frontend (la configurazione del progetto eredita 4 spazi dall'`.editorconfig`).
+
+### Periodi dei temi: test backend del validatore e dell'endpoint (passo 3)
+
+**Perché:** la validazione dei periodi e i permessi del nuovo endpoint devono essere verificati, inclusi input ostili e overposting.
+**Cosa / Dove:** `tests/SagreEventi.Web.Server.Tests/PeriodoTemaValidatorTests.cs` (unit: quattro periodi, chiavi mancanti/duplicate/sconosciute, limiti della Pasqua, date reali, 29 febbraio, durata 60/61 giorni, Natale a cavallo d'anno), `tests/SagreEventi.Web.Server.Tests/TemiApiTests.cs` (integration: lettura anonima con seed; PUT anonimo 401, Editor 403; salvataggio con `no-store` e lettura successiva aggiornata; errori per campo 400; JSON malformato o di tipo errato 400; chiavi malevole 400; overposting ignorato; `attivo` mancante letto come disattivo), `tests/SagreEventi.Web.Server.Tests/PeriodiTemaTestData.cs` (builder condivisi).
+**Verifica:** `dotnet test` sull'intera soluzione: 429 test superati (386 esistenti + 43 nuovi), nessun avviso. Copertura del codice nuovo (coverlet): validatore, servizio, endpoint ed entità al 100%; le migrazioni sono codice generato e restano fuori.
+**Note:** gli integration test usano il database SQLite in memoria di `ApiFactory`, come quelli già presenti; il passaggio a un database SQL Server di prova è deciso e rimandato alla chiusura del piano (`backend-app.md` §4.5, vedi `CHECKLIST.md`). Il servizio non ha test unit propri perché tocca il `DbContext`: è coperto dagli integration test.
+
+### Periodi dei temi: endpoint di lettura e salvataggio (passo 2)
+
+**Perché:** i periodi devono poter essere letti dall'app e cambiati dall'admin senza una nuova versione.
+**Cosa / Dove:** `Shared/Models/PeriodoTemaModel.cs` (record del contratto e costanti delle chiavi), `Interfaces/IPeriodiTemaService.cs`, `Models/Services/Application/PeriodiTemaService.cs` (lettura con FusionCache 5 minuti e fail-safe come gli eventi, invalidazione per tag `periodi-tema` dopo il salvataggio), `Validators/PeriodoTemaValidator.cs` (esattamente quattro periodi una volta ciascuno; Pasqua 0–14 prima e 0–7 dopo; date reali; durata massima 60 giorni; campi non previsti vuoti), `Endpoints/TemiEndpoints.cs` (`GET /api/temi/periodi` anonimo, `PUT /api/temi/periodi` con `SoloAdmin` e `Cache-Control: no-store`), registrazione in `ServiceCollectionExtensions.cs` e `Program.cs`.
+**Verifica:** build senza avvisi né errori; 386 test backend superati (test nuovi al passo 3).
+**Note:** errori di validazione come `ProblemDetails` con messaggi in italiano, come negli altri endpoint. Un campo `attivo` mancante è letto come disattivo. Nessun test ancora per validatore, servizio ed endpoint: arrivano nel passo 3.
+
+### Periodi dei temi: entità e migrazione (passo 1)
+
+**Perché:** i periodi dei temi stagionali sono oggi costanti in `theme.service.ts`; per renderli configurabili dal database serve prima la tabella, con i valori iniziali.
+**Cosa / Dove:** `Models/Entities/PeriodoTema.cs` (nuova entità, una riga per periodo: Pasqua come regola con giorni prima e dopo, gli altri come giorno e mese di inizio e fine, con interruttore `Attivo`), `Models/Services/Infrastructure/AppDbContext.cs` (`PeriodiTema`, configurazione e seed dei quattro periodi), migrazione `Migrations/20261109103611_AddPeriodiTema` (tabella `PeriodiTema`). Seed: Pasqua 7 giorni prima e 1 dopo; Ferragosto 1–20 agosto; Halloween 24–31 ottobre; Natale 1 dicembre – 6 gennaio. Tutti attivi.
+**Verifica:** build senza avvisi né errori; 386 test backend superati.
+**Note:** il frontend non cambia (`STAGIONI` resta costante fino ai passi 4-5). Il seed di Halloween segue la decisione del 2026-11-02 (24–31 ottobre), non il valore attuale 15 ottobre – 2 novembre. Migrazione non ancora applicata a un database reale.
+
 ### Riallineamento dei riferimenti di CLAUDE.md alle regole aggiornate
 
 **Perché:** il template ha diviso `security.md` in `security-backend.md` e `security-frontend.md` e ha aggiornato `core.md` alla v3.36 (sito di documentazione esterno, §5b). Alcuni rimandi di `CLAUDE.md` puntavano ancora alle sezioni nel posto sbagliato.

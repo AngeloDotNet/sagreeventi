@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { AuthService } from './core/auth/auth.service';
 import { authInterceptor } from './core/auth-interceptor/auth.interceptor';
 import { ConfigService } from './core/config/config.service';
+import { ThemeService } from './core/theme/theme.service';
 import { SagrePreset } from './theme';
 
 export const appConfig: ApplicationConfig = {
@@ -23,13 +24,16 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
     ),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
-    // La configurazione va caricata prima di tutto; poi i ruoli vengono riallineati con il server
+    // La configurazione va caricata prima di tutto; poi i ruoli vengono riallineati con il server e i periodi dei temi
     provideAppInitializer(async () => {
       // inject() va chiamato prima di ogni await: dopo non c'è più il contesto di iniezione (NG0203)
       const config = inject(ConfigService);
       const auth = inject(AuthService);
+      const theme = inject(ThemeService);
       await config.load();
       void auth.aggiornaUtente();
+      // Non si attende: fino alla risposta valgono i periodi predefiniti
+      void theme.caricaPeriodi();
     }),
     providePrimeNG({
       ripple: true,
