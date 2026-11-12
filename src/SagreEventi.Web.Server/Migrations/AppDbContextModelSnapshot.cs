@@ -222,6 +222,74 @@ namespace SagreEventi.Web.Server.Migrations
                     b.ToTable("Eventi", (string)null);
                 });
 
+            modelBuilder.Entity("SagreEventi.Web.Server.Models.Entities.PeriodoTema", b =>
+                {
+                    b.Property<string>("Chiave")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("Attivo")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("GiorniDopoPasqua")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GiorniPrimaPasqua")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GiornoFine")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GiornoInizio")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MeseFine")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MeseInizio")
+                        .HasColumnType("int");
+
+                    b.HasKey("Chiave");
+
+                    b.ToTable("PeriodiTema", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Chiave = "pasqua",
+                            Attivo = true,
+                            GiorniDopoPasqua = 1,
+                            GiorniPrimaPasqua = 7
+                        },
+                        new
+                        {
+                            Chiave = "ferragosto",
+                            Attivo = true,
+                            GiornoFine = 20,
+                            GiornoInizio = 1,
+                            MeseFine = 8,
+                            MeseInizio = 8
+                        },
+                        new
+                        {
+                            Chiave = "halloween",
+                            Attivo = true,
+                            GiornoFine = 31,
+                            GiornoInizio = 24,
+                            MeseFine = 10,
+                            MeseInizio = 10
+                        },
+                        new
+                        {
+                            Chiave = "natale",
+                            Attivo = true,
+                            GiornoFine = 6,
+                            GiornoInizio = 1,
+                            MeseFine = 1,
+                            MeseInizio = 12
+                        });
+                });
+
             modelBuilder.Entity("SagreEventi.Web.Server.Models.Entities.StatoModerazioneLookup", b =>
                 {
                     b.Property<int>("Id")

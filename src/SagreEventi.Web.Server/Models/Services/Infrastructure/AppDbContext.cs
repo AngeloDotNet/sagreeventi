@@ -14,9 +14,24 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : Ident
     /// <summary>Lookup table with the values of <c>StatoModerazione</c>, referenced by <c>Eventi.Stato</c>.</summary>
     public DbSet<StatoModerazioneLookup> StatiModerazione { get; set; }
 
+    /// <summary>Configurable periods of the seasonal themes.</summary>
+    public DbSet<PeriodoTema> PeriodiTema { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<PeriodoTema>(entity =>
+        {
+            entity.ToTable("PeriodiTema");
+            entity.HasKey(periodo => periodo.Chiave);
+            entity.Property(periodo => periodo.Chiave).HasMaxLength(20);
+            entity.HasData(
+                new PeriodoTema { Chiave = "pasqua", GiorniPrimaPasqua = 7, GiorniDopoPasqua = 1 },
+                new PeriodoTema { Chiave = "ferragosto", GiornoInizio = 1, MeseInizio = 8, GiornoFine = 20, MeseFine = 8 },
+                new PeriodoTema { Chiave = "halloween", GiornoInizio = 24, MeseInizio = 10, GiornoFine = 31, MeseFine = 10 },
+                new PeriodoTema { Chiave = "natale", GiornoInizio = 1, MeseInizio = 12, GiornoFine = 6, MeseFine = 1 });
+        });
 
         modelBuilder.Entity<Evento>(entity =>
         {
