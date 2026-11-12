@@ -4,6 +4,27 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-12
 
+### Rilascio 1.1.0
+
+Prima release con tag: la versione mostrata nella pagina Informazioni segue il tag `X.Y.Z` e non più `package.json` (lo imposta la CI).
+
+**Aggiunto:**
+- PWA installabile e utilizzabile offline: elenco, dettaglio, bozze locali e sincronizzazione automatica (al ritorno in primo piano e ogni 10 minuti), con avviso di nuova versione.
+- Segnalazione di eventi anche senza account, con protezione anti-bot (proof of work ALTCHA v1) e moderazione: stati `InAttesa`, `Approvato`, `Rifiutato` e avviso email ai moderatori.
+- Periodi dei temi stagionali (Natale, Halloween, Pasqua, Ferragosto) configurabili da database, con scheda «Temi» in Gestione per l'Admin.
+- Pagina Informazioni con versione e data di build; campi indirizzo e coordinate negli eventi lato server (la mappa arriva con una release successiva).
+
+**Modificato:**
+- Deploy con un solo compose dalle immagini di Docker Hub; migrazioni applicate all'avvio.
+- Frontend riorganizzato in cartelle per elemento; versione letta dal tag di rilascio.
+- Regole di progetto riallineate al template (`core.md` 3.39, `git.md` 1.6).
+
+**Corretto:**
+- Dettaglio evento senza scorrimento orizzontale su telefono; `build-info.mjs` crea la cartella di output in un checkout pulito.
+
+**Sicurezza:**
+- Rimossi gli healthcheck; lock file NuGet e `TreatWarningsAsErrors`; cache dei dati pubblici con invalidazione. Restano 25 vulnerabilità moderate solo negli strumenti di sviluppo (0 in produzione), da chiudere con l'aggiornamento di Angular 22.
+
 ### Regole riallineate al template (core 3.39, git 1.6)
 
 **Perché:** il template aveva `core.md` 3.39, `git.md` 1.6 e una nota in `feature-workflow.md`; il `CLAUDE.md` contraddiceva le nuove regole sui commit.
