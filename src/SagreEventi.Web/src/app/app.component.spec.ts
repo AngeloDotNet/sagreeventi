@@ -3,13 +3,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { AppComponent } from './app.component';
-import { AggiornamentoAppService } from './core/aggiornamento-app.service';
-import { AuthService } from './core/auth.service';
-import { EventiStore } from './core/eventi-store.service';
-import { PermessiService } from './core/permessi.service';
-import { RevisioneService } from './core/revisione.service';
-import { ThemeService } from './core/theme.service';
-import { SyncStatusComponent } from './shared/sync-status.component';
+import { AggiornamentoAppService } from './core/aggiornamento-app/aggiornamento-app.service';
+import { AuthService } from './core/auth/auth.service';
+import { EventiStore } from './core/eventi-store/eventi-store.service';
+import { PermessiService } from './core/permessi/permessi.service';
+import { RevisioneService } from './core/revisione/revisione.service';
+import { ThemeService } from './core/theme/theme.service';
+import { SyncStatusComponent } from './shared/sync-status/sync-status.component';
 
 @Component({ selector: 'app-sync-status', template: '', changeDetection: ChangeDetectionStrategy.OnPush })
 class SyncStatusStubComponent {}

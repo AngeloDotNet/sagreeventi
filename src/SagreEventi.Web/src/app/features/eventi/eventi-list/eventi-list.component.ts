@@ -6,10 +6,10 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { EventiStore } from '../../../core/eventi-store.service';
-import { normalizzaTesto, parseLocalDate, statoEvento } from '../../../core/evento-utils';
-import { EmptyStateComponent } from '../../../shared/empty-state.component';
-import { EventoCardComponent } from '../../../shared/evento-card.component';
+import { EventiStore } from '../../../core/eventi-store/eventi-store.service';
+import { normalizzaTesto, parseLocalDate, statoEvento } from '../../../core/evento-utils/evento-utils';
+import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.component';
+import { EventoCardComponent } from '../../../shared/evento-card/evento-card.component';
 
 type Periodo = 'tutti' | 'in-corso' | 'in-arrivo';
 type Ordine = 'data' | 'nome' | 'citta';

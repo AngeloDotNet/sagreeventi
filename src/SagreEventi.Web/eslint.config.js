@@ -2,27 +2,23 @@
 const eslint = require('@eslint/js');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
-const fs = require('node:fs');
-const path = require('node:path');
-
-// Feature boundaries: a feature may import from core/ and shared/, never from another feature.
-// The list of features is read from the folders under src/app/features, so a new feature is covered automatically.
-const featuresDir = path.join(__dirname, 'src/app/features');
-const features = fs.readdirSync(featuresDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
-const featureBoundaries = features.map((feature) => ({
-  files: [`src/app/features/${feature}/**/*.ts`],
+// Import boundaries:
+// - a feature never imports from another feature, so code shared by features goes to core/ or shared/;
+// - core/ and shared/ never import from features/.
+// Relative imports that reach features/ always contain the "features/" segment, so one pattern covers both cases.
+const boundaries = [
+  {
+    files: ['src/app/features/**/*.ts'],
+    message: 'A feature cannot import from another feature: move the shared code to core/ or shared/.',
+  },
+  {
+    files: ['src/app/core/**/*.ts', 'src/app/shared/**/*.ts'],
+    message: 'core/ and shared/ cannot import from features/.',
+  },
+].map(({ files, message }) => ({
+  files,
   rules: {
-    'no-restricted-imports': [
-      'error',
-      {
-        patterns: [
-          {
-            group: ['**/features/**', ...features.filter((f) => f !== feature).flatMap((f) => [`**/${f}`, `**/${f}/**`])],
-            message: 'A feature cannot import from another feature: move the shared code to core/ or shared/.',
-          },
-        ],
-      },
-    ],
+    'no-restricted-imports': ['error', { patterns: [{ group: ['**/features/**'], message }] }],
   },
 }));
 
@@ -38,7 +34,7 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
     },
   },
-  ...featureBoundaries,
+  ...boundaries,
   {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
