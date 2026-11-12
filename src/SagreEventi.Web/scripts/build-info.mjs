@@ -11,7 +11,7 @@ const outputFile = join(root, 'src', 'app', 'core', 'build-info-generated', 'bui
 const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
 
 // Date in Italian format (dd/mm/yyyy), computed in the Italian timezone so that a build late in the evening keeps its day.
-// The CI passes the release version (from the git tag vX.Y.Z) in APP_VERSION. Only a plain X.Y.Z is accepted:
+// The CI passes the release version (from the git tag X.Y.Z) in APP_VERSION. Only a plain X.Y.Z is accepted:
 // anything else (empty, malformed, with extra characters) is ignored and package.json is used, so the value
 // written into the generated TypeScript file is always safe.
 const envVersion = process.env.APP_VERSION?.trim();
