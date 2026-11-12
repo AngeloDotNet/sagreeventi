@@ -2,6 +2,22 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-12
+
+### Tag di rilascio `X.Y.Z` senza `v` (allineamento a `git.md` 1.5)
+
+**Perché:** `git.md` 1.5 vuole tag annotati `X.Y.Z` senza prefisso; il workflow di «versione da tag» era scritto per `vX.Y.Z` (scelta A del 2026-11-12).
+**Cosa / Dove:** `.github/workflows/build-push.yml` (trigger `[0-9]+.[0-9]+.[0-9]+`, in entrambi i job regex `^([0-9]+\.[0-9]+\.[0-9]+)$` e messaggio «X.Y.Z format»), commento di `src/SagreEventi.Web/scripts/build-info.mjs`, `README.md` (riga 34), `DEPLOY.md` (tag annotato `git tag -a 1.2.3`, da creare dopo il merge su `main`); wiki `docs/sagreeventi/{architettura,deployment,informazioni}.md` e `CHANGELOG.md` della wiki. Le voci del 2026-11-10 qui sotto citano ancora `vX.Y.Z`: descrivono il lavoro com'era allora.
+**Verifica:** YAML letto con `js-yaml` (trigger e regex dei due job); regex provata su 9 valori: `1.2.3` e `10.20.30` accettati, `v1.2.3`, `1.2`, `1.2.3-rc1`, `1.2.3;x`, spazi finali, a capo e stringa vuota rifiutati. Il filtro del trigger (glob di GitHub) non è provabile in locale; la regex nel job resta la guardia. Pipeline **non avviata** (serve la tua conferma per ogni esecuzione).
+**Note:** il workflow ancora non controlla che il tag stia su `main` (punto aperto in `CHECKLIST.md`).
+
+### Regole del template: `core.md` 3.38 e `git.md` 1.5
+
+**Perché:** `/kit:aggiorna-regole` ha trovato due file diversi dal template (gli altri 12 moduli erano uguali, cambiava solo il fine riga).
+**Cosa / Dove:** `.claude/rules/core.md` (§5c: tag, push del tag e rilascio solo con il via dell'utente) e `.claude/rules/git.md` (tag `X.Y.Z` senza `v`, annotato, solo su `main` dopo il merge). Copie `core.md.bak` e `git.md.bak` accanto, non da committare.
+**Verifica:** nessun codice toccato, nessuna build. `CLAUDE.md` non modificato.
+**Note:** in contrasto con il formato `vX.Y.Z` usato da V1–V3 (versione da tag, non ancora committato): punto annotato in `CHECKLIST.md`, nessun file di V1–V3 toccato.
+
 ## 2026-11-10
 
 ### Regole del template aggiornate e confrontate con i `.bak`

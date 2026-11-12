@@ -3,4 +3,4 @@ dist
 coverage
 node_modules
 package-lock.json
-src/app/core/build-info.generated.ts
+src/app/core/build-info-generated/build-info.generated.ts
