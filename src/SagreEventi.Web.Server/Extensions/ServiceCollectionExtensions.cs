@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using SagreEventi.Web.Server.Endpoints;
 using SagreEventi.Web.Server.HostedServices;
+using SagreEventi.Web.Server.Interfaces;
 using SagreEventi.Web.Server.Models.Services.Application;
 using SagreEventi.Web.Server.Models.Services.Infrastructure;
 using ZiggyCreatures.Caching.Fusion;
@@ -82,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<EventiHostedService>();
         services.AddHostedService<ModerazioneHostedService>();
         services.AddTransient<IEventiService, EfCoreEventiService>();
+        services.AddTransient<IPeriodiTemaService, PeriodiTemaService>();
 
         // Rate limit on writes (anonymous insert): requests per minute per IP, read from the configuration for each new partition
         services.AddRateLimiter(options => options.AddPolicy(EventiEndpoints.ScritturaRateLimitPolicy, httpContext =>

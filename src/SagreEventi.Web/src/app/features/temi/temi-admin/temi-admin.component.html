@@ -1,0 +1,156 @@
+<div class="container pagina">
+  <h1>Temi stagionali</h1>
+  <p class="pagina-intro larga">
+    Periodi in cui il tema stagionale è disponibile. Un periodo disattivato non rende disponibile il suo tema. I cambiamenti valgono per
+    tutti i visitatori dopo il salvataggio.
+  </p>
+
+  @if (errore()) {
+    <p-message severity="error" styleClass="mt">{{ errore() }}</p-message>
+  }
+
+  <div class="azioni">
+    <p-button
+      icon="pi pi-refresh"
+      severity="secondary"
+      [text]="true"
+      ariaLabel="Ricarica"
+      [disabled]="caricamento() || occupato()"
+      (onClick)="carica()"
+    />
+  </div>
+
+  @for (p of periodi(); track p.chiave; let i = $index) {
+    <section class="periodo" [attr.aria-labelledby]="'titolo-' + p.chiave">
+      <header class="periodo-testa">
+        <h2 [id]="'titolo-' + p.chiave">{{ nomi[p.chiave] }}</h2>
+        <div class="interruttore">
+          <p-toggleswitch [ariaLabel]="'Attivo: ' + nomi[p.chiave]" [ngModel]="p.attivo" (ngModelChange)="imposta(i, { attivo: $event })" />
+          <span aria-hidden="true">Attivo</span>
+        </div>
+      </header>
+
+      @if (p.chiave === 'pasqua') {
+        <p-message severity="info" variant="simple" styleClass="nota">
+          Le date esatte si ricalcolano da sole ogni anno: qui si configurano solo i giorni prima e dopo la domenica di Pasqua.
+        </p-message>
+        <div class="griglia">
+          <div class="campo">
+            <label for="pasqua-prima">Giorni prima di Pasqua (0–14)</label>
+            <p-inputnumber
+              inputId="pasqua-prima"
+              [min]="0"
+              [max]="14"
+              [showButtons]="true"
+              [ngModel]="p.giorniPrimaPasqua"
+              (ngModelChange)="imposta(i, { giorniPrimaPasqua: $event })"
+            />
+            @if (erroreCampo(i, 'giorniPrimaPasqua'); as e) {
+              <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+            }
+          </div>
+          <div class="campo">
+            <label for="pasqua-dopo">Giorni dopo Pasqua (0–7)</label>
+            <p-inputnumber
+              inputId="pasqua-dopo"
+              [min]="0"
+              [max]="7"
+              [showButtons]="true"
+              [ngModel]="p.giorniDopoPasqua"
+              (ngModelChange)="imposta(i, { giorniDopoPasqua: $event })"
+            />
+            @if (erroreCampo(i, 'giorniDopoPasqua'); as e) {
+              <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="griglia">
+          <fieldset class="data">
+            <legend>Inizio</legend>
+            <div class="campo">
+              <label [for]="p.chiave + '-giorno-inizio'">Giorno</label>
+              <p-select
+                [inputId]="p.chiave + '-giorno-inizio'"
+                [options]="giorni"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="p.giornoInizio"
+                (ngModelChange)="imposta(i, { giornoInizio: $event })"
+                appendTo="body"
+              />
+              @if (erroreCampo(i, 'giornoInizio'); as e) {
+                <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+              }
+            </div>
+            <div class="campo">
+              <label [for]="p.chiave + '-mese-inizio'">Mese</label>
+              <p-select
+                [inputId]="p.chiave + '-mese-inizio'"
+                [options]="mesi"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="p.meseInizio"
+                (ngModelChange)="imposta(i, { meseInizio: $event })"
+                appendTo="body"
+              />
+              @if (erroreCampo(i, 'meseInizio'); as e) {
+                <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+              }
+            </div>
+          </fieldset>
+          <fieldset class="data">
+            <legend>Fine</legend>
+            <div class="campo">
+              <label [for]="p.chiave + '-giorno-fine'">Giorno</label>
+              <p-select
+                [inputId]="p.chiave + '-giorno-fine'"
+                [options]="giorni"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="p.giornoFine"
+                (ngModelChange)="imposta(i, { giornoFine: $event })"
+                appendTo="body"
+              />
+              @if (erroreCampo(i, 'giornoFine'); as e) {
+                <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+              }
+            </div>
+            <div class="campo">
+              <label [for]="p.chiave + '-mese-fine'">Mese</label>
+              <p-select
+                [inputId]="p.chiave + '-mese-fine'"
+                [options]="mesi"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="p.meseFine"
+                (ngModelChange)="imposta(i, { meseFine: $event })"
+                appendTo="body"
+              />
+              @if (erroreCampo(i, 'meseFine'); as e) {
+                <p-message severity="error" variant="simple" size="small">{{ e }}</p-message>
+              }
+            </div>
+          </fieldset>
+        </div>
+        @if (p.chiave === 'natale') {
+          <p class="nota-testo">Il periodo vale sia per il tema Natale chiaro sia per quello scuro.</p>
+        }
+      }
+    </section>
+  } @empty {
+    @if (!caricamento()) {
+      <p>Nessun periodo da mostrare.</p>
+    }
+  }
+
+  <div class="azioni">
+    <p-button
+      label="Salva"
+      icon="pi pi-check"
+      [loading]="occupato()"
+      [disabled]="caricamento() || periodi().length === 0"
+      (onClick)="salva()"
+    />
+  </div>
+</div>

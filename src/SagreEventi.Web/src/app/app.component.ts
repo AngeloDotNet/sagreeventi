@@ -9,7 +9,7 @@ import { AuthService } from './core/auth/auth.service';
 import { EventiStore } from './core/eventi-store/eventi-store.service';
 import { PermessiService } from './core/permessi/permessi.service';
 import { RevisioneService } from './core/revisione/revisione.service';
-import { Tema, ThemeService, inStagione } from './core/theme/theme.service';
+import { Tema, ThemeService } from './core/theme/theme.service';
 import { AggiornamentoAppService } from './core/aggiornamento-app/aggiornamento-app.service';
 import { ErroreNavigazioneService } from './core/errore-navigazione/errore-navigazione.service';
 import { SincronizzazioneAutomaticaService } from './core/sincronizzazione-automatica/sincronizzazione-automatica.service';
@@ -95,7 +95,7 @@ export class AppComponent {
 
   /** Theme picker entries: the active one is highlighted. */
   protected readonly vociTema = computed<MenuItem[]>(() =>
-    TEMI_MENU.filter((t) => inStagione(t.tema)).map((t) => ({
+    TEMI_MENU.filter((t) => this.theme.disponibile(t.tema)).map((t) => ({
       label: t.etichetta,
       icon: t.icona,
       styleClass: this.theme.tema() === t.tema ? 'voce-attiva' : '',

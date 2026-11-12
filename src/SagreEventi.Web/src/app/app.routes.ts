@@ -52,6 +52,12 @@ export const routes: Routes = [
         title: `Utenti · ${base}`,
         loadComponent: () => import('./features/amministrazione/amministrazione/amministrazione.component').then((m) => m.AmministrazioneComponent),
       },
+      {
+        path: 'temi',
+        canActivate: [richiedeAdmin],
+        title: `Temi · ${base}`,
+        loadComponent: () => import('./features/temi/temi-admin/temi-admin.component').then((m) => m.TemiAdminComponent),
+      },
     ],
   },
   // Vecchi indirizzi, mantenuti per i link già condivisi
