@@ -12,8 +12,7 @@ Le regole generali sono in `.claude/rules/` (`core`, `backend`, `frontend`, `sec
 ## Generale
 - Definire il plan e salvarlo in un file `.md`
 - Il plan va seguito step by step: ogni step richiede un OK esplicito prima di procedere
-- **Commit:** solo locali e solo con conferma esplicita dell'utente, secondo `.claude/rules/git.md` (mostrare file e messaggio, attendere l'ok). Push e PR solo come da «Eccezioni alle regole globali» (tag e rilasci no). Mai commit di iniziativa.
-- **Commit di fila, massimo per lotto:** 5 (deciso il 2026-11-10). Vale solo se l'utente passa un numero a `/kit:commit-passo N`, entro questo tetto (`.claude/rules/git.md`, «Commit multipli», punto 4).
+- **Commit:** solo locali, secondo `.claude/rules/git.md` 1.6 (allineato il 2026-11-12). Con `/kit:commit-passo`, `/kit:pr-develop` e `/kit:pr-main` il lancio da parte dell'utente è il via libera; fuori dalle skill serve l'ok esplicito (mostrare file e messaggio, attendere l'ok). Push e PR solo come da «Eccezioni alle regole globali» (tag e rilasci no). Mai commit di iniziativa fuori dalle skill.
 - In caso di dubbio, fare una domanda alla volta e non prendere iniziative.
 - Aggiungere commenti in inglese ai metodi pubblici, se presenti nel codice in italiano o totalmente assenti, aggiungere i commenti in inglese corrispondenti.
 
@@ -49,7 +48,7 @@ Scelte concordate con l'utente il 2026-10-31, riviste il 2026-11-01 dopo l'aggio
 | Security headers | Oggi l'API manda solo `nosniff` e HSTS (fuori da Development) e l'nginx del frontend solo `nosniff`: mancano CSP, `Referrer-Policy`, `Permissions-Policy` e `frame-ancestors` (`security-backend.md`, «Protezione dell'API»). **Da allineare** con `PLAN-security-headers.md` (deciso il 2026-11-01); la CSP del frontend, servito come file statici, si farà con hash degli inline noti, non con nonce, dopo la verifica di fattibilità del piano |
 | CI e supply chain | Oggi solo `.github/workflows/build-push.yml`. **Da allineare a fasi** con `PLAN-ci-supply-chain.md` (deciso il 2026-11-01; repository pubblico): Dependabot e CI su PR, poi CodeQL e gitleaks, poi Trivy e SBOM. Ciò che non si farà diventa una deroga annotata qui. Avvio delle pipeline: Claude può avviarle solo dopo una conferma esplicita per ogni esecuzione (decisione del 2026-11-08); la gestione dei segreti della CI resta all'utente |
 | Struttura delle cartelle del backend | Non è una deroga: i MUST di `backend.md` §2 sulle cartelle `Interfaces/` (punto 36), `Validators/` (39) e `Requests/` e `Responses/` (41), più expression body (37) e using inutilizzati (38), sono oggi non rispettati dal codice esistente e si allineano con `PLAN-allineamento-backend.md` (deciso il 2026-11-01). Il codice nuovo li rispetta già da ora |
-| Moduli opzionali | `backend-email` incluso; `backend-infra` incluso **solo per la sezione sulla cache** (deciso il 2026-11-01: messaggistica RabbitMQ, outbox ed eventi di dominio non inclusi); `feature-workflow` non incluso |
+| Moduli opzionali | `backend-email` incluso; `backend-infra` incluso **solo per la sezione sulla cache** (deciso il 2026-11-01: messaggistica RabbitMQ, outbox ed eventi di dominio non inclusi); `feature-workflow` non incluso (il file in `.claude/rules-optional/` è solo una copia di riferimento dal template: non si applica) |
 
 ## Note per Claude
 - Il nome del file del piano e del changelog segue questo file, non `core.md` (`docs/piani/PLAN-<nome>.md`, `CHANGELOG.md`).

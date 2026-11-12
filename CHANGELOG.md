@@ -4,6 +4,26 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-12
 
+### Regole riallineate al template (core 3.39, git 1.6)
+
+**Perché:** il template aveva `core.md` 3.39, `git.md` 1.6 e una nota in `feature-workflow.md`; il `CLAUDE.md` contraddiceva le nuove regole sui commit.
+**Cosa / Dove:** `.claude/rules/core.md`, `.claude/rules/git.md` e `.claude/rules-optional/feature-workflow.md` copiati dal template. `CLAUDE.md`: sezione «Git» (con `/kit:commit-passo`, `/kit:pr-develop` e `/kit:pr-main` il lancio è il via libera, fuori dalle skill serve l'ok; tolto il tetto di 5 commit per lotto, che `git.md` 1.6 non prevede più) e riga «Moduli opzionali» (`feature-workflow` resta non incluso, il file è solo di riferimento).
+**Verifica:** solo documentazione, nessuna build.
+**Note:** i tre file `.bak` e `piano-commit.md` (tutti i commit del piano fatti) sono stati cancellati.
+
+### Periodi dei temi: riallineati al refactoring e pubblicati (PR #58)
+
+**Perché:** il lavoro dei temi era tutto non committato in un worktree fermo a `201770c`, precedente al refactoring delle cartelle del frontend (PR #56). Serviva portarlo su `develop` senza perderlo.
+**Cosa / Dove:** copia di sicurezza esterna, `git stash -u`, fast-forward a `6f78e22`, `git stash pop`; tre conflitti risolti a mano (`app.component.ts`, `app.config.ts`, `CHANGELOG.md`); file nuovi spostati nella forma della regola (`core/temi-api/temi-api.service.*`, `features/temi/temi-admin/temi-admin.component.*`) con gli import corretti. Sei commit (`7877185`, `e341604`, `6b57dd0`, `1f41740`, `7832fe3`, `65d5cf5`) in squash su `develop` come `bb50d7c` (PR #58). Nello snapshot di EF sono rimaste le due righe di `develop` (`using ...Migrations;` e `/// <inheritdoc />`), come deciso il 2026-11-08.
+**Verifica:** ogni commit provato da solo in un checkout pulito. Backend: 0 avvisi, 386 test dopo il 2/6, 429 dal 3/6. Frontend: 373 test dopo il 4/6, 383 su 22 file dopo il 5/6, lint e build senza avvisi. Non provati: migrazione su SQL Server reale, scheda Admin nel browser.
+**Note:** durante la preparazione del 6/6 lo script con cui avevo unito i due `CHANGELOG.md` ha rovinato una riga (un `$` letto come segnale speciale di `String.replace`): il file è stato rifatto da `HEAD` prima del commit, senza effetti su `develop`. L'oggetto del primo commit era di 75 caratteri (limite 72), irrilevante dopo lo squash.
+
+### `build-info.mjs` crea la cartella di output
+
+**Perché:** lo script scrive in `core/build-info-generated/`, cartella che contiene solo il file generato e ignorato da git: in un checkout pulito (CI, Docker, clone nuovo) non esiste e lo script falliva con `ENOENT`. In locale non si vedeva perché la cartella c'era già. Trovato provando il commit di refactoring da solo in un checkout pulito.
+**Cosa / Dove:** `src/SagreEventi.Web/scripts/build-info.mjs`: `mkdir(..., { recursive: true })` prima di `writeFile`. Incluso nel commit `adc8129` (PR #56).
+**Verifica:** `npm test` 361 su 20 file, lint e build di produzione senza avvisi in un checkout pulito; `APP_VERSION=2.3.4` produce `2.3.4`.
+
 ### Tag di rilascio `X.Y.Z` senza `v` (allineamento a `git.md` 1.5)
 
 **Perché:** `git.md` 1.5 vuole tag annotati `X.Y.Z` senza prefisso; il workflow di «versione da tag» era scritto per `vX.Y.Z` (scelta A del 2026-11-12).
