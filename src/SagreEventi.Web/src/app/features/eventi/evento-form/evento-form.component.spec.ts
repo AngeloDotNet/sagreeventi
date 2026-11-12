@@ -2,9 +2,9 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { EventiStore } from '../../../core/eventi-store.service';
-import { EventoLocale } from '../../../core/models';
-import { PermessiService } from '../../../core/permessi.service';
+import { EventiStore } from '../../../core/eventi-store/eventi-store.service';
+import { EventoLocale } from '../../../core/models/models';
+import { PermessiService } from '../../../core/permessi/permessi.service';
 import { EventoFormComponent } from './evento-form.component';
 
 const TESTO_AVVISO = 'La segnalazione sarà visibile a tutti solo dopo la verifica degli amministratori, per evitare spam e contenuti non idonei.';

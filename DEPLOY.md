@@ -46,7 +46,8 @@ La porta 5417 è casuale: se la cambi, aggiorna sia il compose (`docker-compose.
 `.github/workflows/build-push.yml` compila e testa la soluzione .NET, esegue i test del client (`npm test`), poi costruisce le due immagini (sempre senza cache). Se un test fallisce l'immagine corrispondente non viene costruita né pubblicata:
 
 - pull request verso `main`: solo build e test, nessun push;
-- push su `main` o avvio manuale: push di `<utente>/sagreeventi-api` e `<utente>/sagreeventi-web` con i tag `latest` e SHA del commit.
+- push su `main` o avvio manuale: push di `<utente>/sagreeventi-api` e `<utente>/sagreeventi-web` con i tag `latest` e SHA del commit;
+- tag `X.Y.Z` (rilascio, senza prefisso `v`, come chiede `git.md`): oltre ai tag precedenti, le due immagini ricevono anche il tag `X.Y.Z`, e quella Angular mostra `X.Y.Z` nella pagina Informazioni. Il nome del tag deve essere esattamente `X.Y.Z` (per esempio `1.2.3`), altrimenti il job fallisce. Il tag è annotato e si crea dopo il merge su `main`, sul commit di merge (`git tag -a 1.2.3 -m "..."` e `git push origin 1.2.3`): il workflow non controlla su quale ramo sta il tag, e anche il tag `latest` viene aggiornato.
 
 Secret da creare nel repository (Settings → Secrets and variables → Actions):
 

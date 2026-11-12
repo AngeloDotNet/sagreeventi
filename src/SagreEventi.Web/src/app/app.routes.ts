@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { richiedeAdmin, richiedeModifica } from './core/permessi.service';
+import { richiedeAdmin, richiedeModifica } from './core/permessi/permessi.service';
 
 const base = 'Sagre & Eventi';
 
@@ -7,7 +7,7 @@ export const routes: Routes = [
   {
     path: '',
     title: base,
-    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent),
+    loadComponent: () => import('./features/home/home/home.component').then((m) => m.HomeComponent),
   },
   {
     path: 'eventi',
@@ -33,24 +33,24 @@ export const routes: Routes = [
   {
     path: 'segnalazioni',
     title: `Le mie segnalazioni · ${base}`,
-    loadComponent: () => import('./features/segnalazioni/mie-segnalazioni.component').then((m) => m.MieSegnalazioniComponent),
+    loadComponent: () => import('./features/segnalazioni/mie-segnalazioni/mie-segnalazioni.component').then((m) => m.MieSegnalazioniComponent),
   },
   {
     path: 'gestione',
     canActivate: [richiedeModifica],
-    loadComponent: () => import('./features/gestione/gestione.component').then((m) => m.GestioneComponent),
+    loadComponent: () => import('./features/gestione/gestione/gestione.component').then((m) => m.GestioneComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'revisione' },
       {
         path: 'revisione',
         title: `Revisione eventi · ${base}`,
-        loadComponent: () => import('./features/revisione/revisione.component').then((m) => m.RevisioneComponent),
+        loadComponent: () => import('./features/revisione/revisione/revisione.component').then((m) => m.RevisioneComponent),
       },
       {
         path: 'utenti',
         canActivate: [richiedeAdmin],
         title: `Utenti · ${base}`,
-        loadComponent: () => import('./features/amministrazione/amministrazione.component').then((m) => m.AmministrazioneComponent),
+        loadComponent: () => import('./features/amministrazione/amministrazione/amministrazione.component').then((m) => m.AmministrazioneComponent),
       },
     ],
   },
@@ -60,21 +60,21 @@ export const routes: Routes = [
   {
     path: 'agenda',
     title: `Agenda · ${base}`,
-    loadComponent: () => import('./features/agenda/agenda.component').then((m) => m.AgendaComponent),
+    loadComponent: () => import('./features/agenda/agenda/agenda.component').then((m) => m.AgendaComponent),
   },
   {
     path: 'informazioni',
     title: `Informazioni · ${base}`,
-    loadComponent: () => import('./features/informazioni/informazioni.component').then((m) => m.InformazioniComponent),
+    loadComponent: () => import('./features/informazioni/informazioni/informazioni.component').then((m) => m.InformazioniComponent),
   },
   {
     path: 'login',
     title: `Accedi · ${base}`,
-    loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
+    loadComponent: () => import('./features/login/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: '**',
     title: `Pagina non trovata · ${base}`,
-    loadComponent: () => import('./features/not-found/not-found.component').then((m) => m.NotFoundComponent),
+    loadComponent: () => import('./features/not-found/not-found/not-found.component').then((m) => m.NotFoundComponent),
   },
 ];

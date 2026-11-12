@@ -2,9 +2,9 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { EventiStore } from '../../../core/eventi-store.service';
-import { EventoLocale } from '../../../core/models';
-import { PermessiService } from '../../../core/permessi.service';
+import { EventiStore } from '../../../core/eventi-store/eventi-store.service';
+import { EventoLocale } from '../../../core/models/models';
+import { PermessiService } from '../../../core/permessi/permessi.service';
 import { EventoDetailComponent } from './evento-detail.component';
 
 describe('EventoDetailComponent links', () => {

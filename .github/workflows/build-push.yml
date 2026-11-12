@@ -3,6 +3,8 @@ name: Build and push images
 on:
   push:
     branches: [main]
+    # Release tags X.Y.Z (no "v" prefix, see git.md): the version is shown in the Informazioni page and added as image tag
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -15,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Push only from main, never for pull requests
-  PUSH: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+  # Push only from main or from a release tag, never for pull requests
+  PUSH: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') }}
 
 jobs:
   api:
@@ -24,6 +26,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
+      # Release tag X.Y.Z -> version X.Y.Z. The tag name goes through an environment variable, never inline in the script
+      - name: Version from tag
+        id: version
+        if: github.ref_type == 'tag'
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$REF_NAME" =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Tag must be in the X.Y.Z format" >&2
+            exit 1
+          fi
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-dotnet@v6
         with:
@@ -53,6 +68,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/sagreeventi-api:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/sagreeventi-api:${{ github.sha }}
+            ${{ steps.version.outputs.version != '' && format('{0}/sagreeventi-api:{1}', secrets.DOCKERHUB_USERNAME, steps.version.outputs.version) || '' }}
           no-cache: true
 
   web:
@@ -60,6 +76,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
+      # Release tag X.Y.Z -> version X.Y.Z. The tag name goes through an environment variable, never inline in the script
+      - name: Version from tag
+        id: version
+        if: github.ref_type == 'tag'
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$REF_NAME" =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Tag must be in the X.Y.Z format" >&2
+            exit 1
+          fi
+          echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v7
         with:
@@ -87,7 +116,10 @@ jobs:
         with:
           context: src/SagreEventi.Web
           push: ${{ env.PUSH == 'true' }}
+          build-args: |
+            APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/sagreeventi-web:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/sagreeventi-web:${{ github.sha }}
+            ${{ steps.version.outputs.version != '' && format('{0}/sagreeventi-web:{1}', secrets.DOCKERHUB_USERNAME, steps.version.outputs.version) || '' }}
           no-cache: true

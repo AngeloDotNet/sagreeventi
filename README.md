@@ -31,7 +31,7 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 - **Funziona offline:** tutto ciò che vedi è salvato sul dispositivo e si sincronizza quando torna la connessione, quando riapri l'app e ogni 10 minuti se la pagina è aperta.
 - **Installabile (PWA):** aggiungila alla schermata Home del telefono o installala sul desktop; l'app si apre anche senza rete e una nuova versione viene segnalata nella barra in alto.
 - **Interfaccia accessibile:** interfaccia in italiano, tema chiaro e scuro, utilizzabile da tastiera e con screen reader, adattata fino al telefono.
-- **Informazioni sull'app:** la pagina `/informazioni` mostra la versione dell'app e la data di rilascio, prese da `package.json` e dalla data di build, senza chiamate al server.
+- **Informazioni sull'app:** la pagina `/informazioni` mostra la versione dell'app e la data di rilascio, prese dal tag di rilascio `X.Y.Z` (o da `package.json` nelle build senza tag) e dalla data di build, senza chiamate al server.
 
 ## Documentazione
 
@@ -97,7 +97,7 @@ npm start
 
 `npm start` apre da solo il browser su `http://localhost:4200`. In sviluppo le richieste a `/api` sono inoltrate a `https://localhost:5001` (vedi `proxy.conf.json`).
 
-Prima di `npm start` e `npm run build` lo script `scripts/build-info.mjs` genera `src/app/core/build-info.generated.ts` con la versione di `package.json` e la data di build (fuso `Europe/Rome`). Il file è generato e non si modifica a mano; per cambiare la versione mostrata si aggiorna `version` in `package.json`.
+Prima di `npm start` e `npm run build` lo script `scripts/build-info.mjs` genera `src/app/core/build-info-generated/build-info.generated.ts` con la versione e la data di build (fuso `Europe/Rome`). La versione è la variabile d'ambiente `APP_VERSION`, se è nel formato `X.Y.Z` (la imposta la CI dal tag `X.Y.Z`, vedi `DEPLOY.md`), altrimenti `version` di `package.json`. Il file è generato e non si modifica a mano; in locale, per provare un valore: `APP_VERSION=1.2.3 npm run build`.
 
 > [!WARNING]
 > I valori predefiniti di `appsettings.json` sono finti (`admin@sagreeventi.local`, `editor@sagreeventi.local`). Cambiali prima di qualsiasi deploy. Dopo l'aggiornamento di un database esistente ogni evento è `InAttesa`: accedi come `Admin` o `Editor`, apri `/gestione/revisione` e approva gli eventi esistenti (fino a 100 per volta).
