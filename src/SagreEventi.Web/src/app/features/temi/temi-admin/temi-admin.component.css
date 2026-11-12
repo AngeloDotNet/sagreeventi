@@ -1,0 +1,55 @@
+.periodo {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: var(--p-border-radius-lg);
+  padding: 1rem;
+  margin-block: 1rem;
+}
+
+.periodo-testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.periodo-testa h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.interruttore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.data {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.data legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.nota {
+  margin-top: 0.75rem;
+}
+
+.nota-testo {
+  color: var(--p-text-muted-color);
+  margin-top: 0.75rem;
+}
