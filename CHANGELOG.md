@@ -25,6 +25,13 @@ Prima release con tag: la versione mostrata nella pagina Informazioni segue il t
 **Sicurezza:**
 - Rimossi gli healthcheck; lock file NuGet e `TreatWarningsAsErrors`; cache dei dati pubblici con invalidazione. Restano 25 vulnerabilità moderate solo negli strumenti di sviluppo (0 in produzione), da chiudere con l'aggiornamento di Angular 22.
 
+### Gestione / Temi: periodi affiancati a due a due
+
+**Perché:** ogni periodo (Pasqua, Ferragosto, Halloween, Natale) occupava tutta la riga e i menu a tendina si distribuivano in orizzontale, lasciando la pagina lunga e sbilanciata.
+**Cosa / Dove:** `features/temi/temi-admin/temi-admin.component.html`: i periodi sono dentro un contenitore `.periodi` (solo indentazione e wrapper, nessun cambio di contenuto). `temi-admin.component.css`: `.periodi` è una griglia a due colonne da 768 px in su e a una colonna sul telefono; dentro ogni periodo i gruppi stanno uno sotto l'altro (Inizio sopra Fine; per Pasqua i due campi in colonna), con Giorno e Mese sulla stessa riga; `p-select` e `p-inputnumber` a tutta larghezza della cella.
+**Verifica:** `npm test` 383 su 22 file, lint e build di produzione senza avvisi. **Non provato nel browser** (nessuna prova visiva a 360, 768 e 1280 px con login Admin).
+**Note:** la voce è in cima al giorno come le altre: se `release/1.1.0` non è ancora stata unita, il merge dei due `CHANGELOG.md` darà un conflitto banale nello stesso punto.
+
 ### Regole riallineate al template (core 3.39, git 1.6)
 
 **Perché:** il template aveva `core.md` 3.39, `git.md` 1.6 e una nota in `feature-workflow.md`; il `CLAUDE.md` contraddiceva le nuove regole sui commit.
