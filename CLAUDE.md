@@ -2,6 +2,9 @@
 
 Le regole generali sono in `.claude/rules/` (`core`, `backend`, `frontend`, `security`, `security-backend`, `security-frontend`, `docker`, `git`, `lavoro`) e nei moduli opzionali `.claude/rules-optional/backend-email.md` e `.claude/rules-optional/backend-infra.md` (solo la parte sulla cache). In caso di conflitto prevale questo file.
 
+- **Versione delle regole copiate:** `core.md` v3.39 del 2026-11-13
+- **Moduli rimossi o non attivati (fuori ambito):** `feature-workflow` (solo copia di riferimento); `backend-email` attivo, `backend-infra` solo per la cache, come da «Moduli opzionali»
+
 - All'inizio di un lavoro leggi `CHANGELOG.md`: riassume le modifiche passate e il contesto, evita di rileggere il codice già noto.
 - Dopo ogni modifica al codice aggiungi in cima a `CHANGELOG.md` una voce breve (data, perché, file toccati, note/da fare).
 - Quando esiste un plan di attività, svolgere gli step uno alla volta e attendere la conferma esplicita dell'utente prima di ogni modifica. Approvare il plan non equivale a dare il via a tutti gli step: dopo l'approvazione proporre lo step successivo e aspettare il "vai".

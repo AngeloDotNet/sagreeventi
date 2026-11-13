@@ -1,8 +1,22 @@
+/* Periods sit side by side on wider screens (two per row), one per row on a phone. */
+.periodi {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+@media (min-width: 48rem) {
+  .periodi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .periodo {
   border: 1px solid var(--p-content-border-color);
   border-radius: var(--p-border-radius-lg);
   padding: 1rem;
-  margin-block: 1rem;
+  min-width: 0;
 }
 
 .periodo-testa {
@@ -24,20 +38,28 @@
   gap: 0.5rem;
 }
 
+/* Inside a period the groups stack: Inizio above Fine, or the two Pasqua fields one under the other. */
 .griglia {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   margin-top: 1rem;
 }
 
+/* Giorno and Mese stay on one line inside their group. */
 .data {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.75rem;
   border: 0;
   margin: 0;
   padding: 0;
+  min-width: 0;
+}
+
+.campo p-select,
+.campo p-inputnumber {
+  width: 100%;
 }
 
 .data legend {
