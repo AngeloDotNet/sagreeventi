@@ -2,6 +2,38 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-14
+
+### GPS A2–A4 pubblicati (PR #67)
+
+**Perché:** chiudere la parte frontend del GPS: indirizzo, coordinate, mappa e ricerca indirizzi (le voci di dettaglio A2, A3 e A4 sono più sotto, nel loro giorno).
+**Cosa / Dove:** due commit sul branch `feature/gps-eventi` (`feat(eventi)` con codice e test, `docs(gps)` con README e CHANGELOG), uniti in `develop` con squash `961d714`; branch remoto, worktree e branch locale rimossi.
+**Verifica:** nel worktree prima della PR: 455 test su 24 file, lint pulito, build di produzione senza errori. La CI della PR non è stata letta da me.
+**Note:** restano la migrazione `AddPosizioneEventi` da applicare a un SQL Server reale, la CSP con la mappa (`PLAN-security-headers.md`) e il contrasto del segnaposto sui temi, da provare nel browser.
+
+### Annotati in `CLAUDE.md` tre MUST non rispettati (D5)
+
+**Perché:** il confronto regole-codice del 2026-11-14 ha trovato scostamenti che vanno registrati in «Lavoro da pianificare», senza adeguare il codice di iniziativa.
+**Cosa / Dove:** `CLAUDE.md`, sezione «Lavoro da pianificare»: sessione bearer in `sessionStorage`, CORS con `AllowAnyHeader`/`AllowAnyMethod` senza `SetPreflightMaxAge`, versione di Node non fissata.
+**Verifica:** solo documentazione, nessuna build. Nessun commit.
+**Note:** restano in `CHECKLIST.md` gli altri punti del confronto (`UseStatusCodePages`, analyzer e `dotnet format` in CI, `traceId` già in `PLAN-trace-id.md`).
+
+### Regole riallineate al template (core 3.44, git 1.9)
+
+**Perché:** il template aveva moduli più recenti (`core.md` 3.44, `git.md` 1.9, `lavoro.md` 1.3, `security.md` 2.5 e altri) rispetto alle copie del progetto.
+**Cosa / Dove:** `.claude/rules/` aggiornati dal template: `core`, `git`, `lavoro`, `security`, `security-backend`, `security-frontend`, `backend`, `backend-app`, `frontend`, `docker` (qui resta in `rules/`, nel template è in `rules-optional/`); `.claude/rules-optional/`: `backend-infra` e `feature-workflow` (due righe ciascuno). Invariati `backend-architecture` e `backend-email`. `CLAUDE.md`: riga «Versione delle regole copiate» (`core.md` v3.44 del 2026-11-14) e nota che `docker` è attivo per scelta del progetto.
+**Verifica:** solo documentazione, nessuna build. I vecchi file sono stati salvati come `.bak` e poi cancellati su richiesta.
+**Note:** le nuove copie hanno fine riga LF, le vecchie CRLF: git può mostrare diff più ampi del reale. Non rilette le novità di `backend.md`, `frontend.md` e dei moduli di sicurezza rispetto al codice esistente (D5: si annota, senza adeguare il codice di iniziativa). Nessun commit.
+
+## 2026-11-13
+
+### Release 1.1.0 chiusa: merge su `main`, tag e rilascio GitHub
+
+**Perché:** portare in produzione la 1.1.0 preparata il 2026-11-12 e riallineare `develop` a `main`, che dopo i merge di release conteneva commit mancanti in `develop` (rischio di conflitti `add/add` alla release successiva).
+**Cosa / Dove:** nessun cambio al codice applicativo. PR #62 (fix layout Gestione / Temi, squash), #63 e #65 (`main` in `develop`, merge commit), #64 (`release/1.1.0` in `main`, merge commit `4089a8a`). Tag annotato `1.1.0` su `4089a8a`, pushato, e rilascio GitHub con le note della voce «Rilascio 1.1.0». `CLAUDE.md`: righe «Versione delle regole copiate» (`core.md` v3.39) e «Moduli rimossi o non attivati». Dependabot ha aperto la PR #66 (`@hono/node-server` 2.1.5 → 2.1.8, dipendenza indiretta solo di sviluppo), unita in `develop` con squash (`17a01bc`).
+**Verifica:** esito della pipeline `build-push.yml` sul tag `1.1.0` **non letto** (immagini su Docker Hub e versione in Informazioni da controllare a mano); dopo #66 non rieseguiti `npm ci --ignore-scripts` e `npm test`; backend non rieseguito dopo i merge (429 test, 0 avvisi prima).
+**Note:** le note del rilascio GitHub non hanno la riga sul layout Temi nella sezione «Corretto» (è in questo file ma non nella voce di rilascio). Il corpo del merge `a9b6aec` dice per errore «No conflicts expected» (il conflitto su `CHANGELOG.md` c'è stato ed è stato risolto); il commit non si riscrive.
+
 ## 2026-11-12
 
 ### Rilascio 1.1.0
