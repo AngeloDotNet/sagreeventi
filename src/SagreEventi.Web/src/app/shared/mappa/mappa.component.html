@@ -1,0 +1,7 @@
+<figure class="mappa">
+  <div #contenitore class="mappa-area" role="region" [attr.aria-label]="etichetta()"></div>
+  <figcaption class="mappa-testo">{{ testo() }}</figcaption>
+  @if (errore()) {
+    <p class="mappa-avviso">La mappa non si carica adesso. Resta il testo con le coordinate.</p>
+  }
+</figure>

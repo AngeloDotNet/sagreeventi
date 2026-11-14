@@ -55,7 +55,12 @@ describe('EventiStore', () => {
   /** The snapshot the store has persisted (flushes the persistence effect first). */
   const snapshot = () => {
     TestBed.tick();
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as { version: number; eventi: EventoLocale[]; cursore: string | null; ultimaSincronizzazione: string | null };
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null') as {
+      version: number;
+      eventi: EventoLocale[];
+      cursore: string | null;
+      ultimaSincronizzazione: string | null;
+    };
   };
 
   /** Creates the store; the snapshot in localStorage is read in the constructor, so seed first. */
@@ -312,9 +317,19 @@ describe('EventiStore', () => {
       expect(api.updateEventi).toHaveBeenCalledTimes(1);
       const inviati = api.updateEventi.mock.calls[0][0];
       expect(inviati.map((e) => e.id)).toEqual(['a']);
-      expect(Object.keys(inviati[0]).sort()).toEqual(
-        ['cittaEvento', 'dataFineEvento', 'dataInizioEvento', 'dataOraUltimaModifica', 'descrizioneEvento', 'eventoConcluso', 'id', 'nomeEvento'],
-      );
+      expect(Object.keys(inviati[0]).sort()).toEqual([
+        'cittaEvento',
+        'dataFineEvento',
+        'dataInizioEvento',
+        'dataOraUltimaModifica',
+        'descrizioneEvento',
+        'eventoConcluso',
+        'id',
+        'indirizzo',
+        'latitudine',
+        'longitudine',
+        'nomeEvento',
+      ]);
       expect(store.daInviare()).toBe(0);
     });
 
@@ -401,12 +416,12 @@ describe('EventiStore', () => {
 
       const esito = store.sincronizza();
       vi.setSystemTime(new Date(ADESSO.getTime() + 5_000));
-      store.aggiorna('a', draft({ nomeEvento: 'Modificato durante l\'invio' }));
+      store.aggiorna('a', draft({ nomeEvento: "Modificato durante l'invio" }));
       invio.next('ok');
       invio.complete();
       await esito;
 
-      expect(store.trova('a')).toMatchObject({ nomeEvento: 'Modificato durante l\'invio', dirty: true });
+      expect(store.trova('a')).toMatchObject({ nomeEvento: "Modificato durante l'invio", dirty: true });
     });
 
     it('holds back protected changes without the role (the server would ignore them)', async () => {
@@ -455,13 +470,29 @@ describe('EventiStore', () => {
   describe('sincronizza: pull', () => {
     it('starts from the initial cursor, then asks only for what is newer', async () => {
       const store = crea();
-      api.getEventi.mockReturnValueOnce(of([ev('a', { dataOraUltimaModifica: '2026-02-01T10:00:00Z' }), ev('b', { dataOraUltimaModifica: '2026-03-01T10:00:00Z' })]));
+      api.getEventi.mockReturnValueOnce(
+        of([ev('a', { dataOraUltimaModifica: '2026-02-01T10:00:00Z' }), ev('b', { dataOraUltimaModifica: '2026-03-01T10:00:00Z' })]),
+      );
 
       await store.sincronizza();
       await store.sincronizza();
 
       expect(api.getEventi.mock.calls.map((c) => c[0])).toEqual([SINCE_INIZIALE, '2026-03-01T10:00:00Z']);
       expect(snapshot().cursore).toBe('2026-03-01T10:00:00Z');
+    });
+
+    it('keeps the address and the coordinates received from the server', async () => {
+      const store = crea();
+      api.getEventi.mockReturnValueOnce(
+        of([
+          ev('a', { indirizzo: 'Piazza Municipio 1', latitudine: 41.5, longitudine: 12.25, dataOraUltimaModifica: '2026-02-01T10:00:00Z' }),
+        ]),
+      );
+
+      await store.sincronizza();
+
+      expect(store.trova('a')).toMatchObject({ indirizzo: 'Piazza Municipio 1', latitudine: 41.5, longitudine: 12.25 });
+      expect(snapshot().eventi.find((e) => e.id === 'a')).toMatchObject({ latitudine: 41.5, longitudine: 12.25 });
     });
 
     it('records the time of the last successful sync', async () => {
@@ -509,7 +540,9 @@ describe('EventiStore', () => {
 
     it('replaces a clean local event and keeps its "mio" flag', async () => {
       seed([ev('a', { mio: true, stato: 'InAttesa', nomeEvento: 'Vecchio' })]);
-      api.getEventi.mockReturnValue(of([ev('a', { nomeEvento: 'Nuovo', stato: 'Approvato', dataOraUltimaModifica: '2026-02-01T10:00:00Z' })]));
+      api.getEventi.mockReturnValue(
+        of([ev('a', { nomeEvento: 'Nuovo', stato: 'Approvato', dataOraUltimaModifica: '2026-02-01T10:00:00Z' })]),
+      );
       const store = crea();
 
       await store.sincronizza();
@@ -527,15 +560,18 @@ describe('EventiStore', () => {
       expect(store.trova('a')).toMatchObject({ nomeEvento: 'Locale', dirty: true });
     });
 
-    it.each(['2026-05-01T10:00:00Z', '2026-06-01T10:00:00Z'])('lets the remote version win when it is as new or newer (%s)', async (remoto) => {
-      seed([ev('a', { dirty: true, protetta: true, nomeEvento: 'Locale', dataOraUltimaModifica: '2026-05-01T10:00:00Z' })]);
-      api.getEventi.mockReturnValue(of([ev('a', { nomeEvento: 'Remoto', dataOraUltimaModifica: remoto })]));
-      const store = crea();
+    it.each(['2026-05-01T10:00:00Z', '2026-06-01T10:00:00Z'])(
+      'lets the remote version win when it is as new or newer (%s)',
+      async (remoto) => {
+        seed([ev('a', { dirty: true, protetta: true, nomeEvento: 'Locale', dataOraUltimaModifica: '2026-05-01T10:00:00Z' })]);
+        api.getEventi.mockReturnValue(of([ev('a', { nomeEvento: 'Remoto', dataOraUltimaModifica: remoto })]));
+        const store = crea();
 
-      await store.sincronizza();
+        await store.sincronizza();
 
-      expect(store.trova('a')).toMatchObject({ nomeEvento: 'Remoto', dirty: false });
-    });
+        expect(store.trova('a')).toMatchObject({ nomeEvento: 'Remoto', dirty: false });
+      },
+    );
 
     it('compares server timestamps without zone as UTC', async () => {
       seed([ev('a', { dirty: true, protetta: true, nomeEvento: 'Locale', dataOraUltimaModifica: '2026-05-01T10:00:00Z' })]);
@@ -560,11 +596,7 @@ describe('EventiStore', () => {
 
   describe('sincronizza: outcome of my reports', () => {
     it('asks the server about my reports not yet public, and updates their state', async () => {
-      seed([
-        ev('mia', { mio: true, stato: 'InAttesa' }),
-        ev('altrui', { stato: 'InAttesa' }),
-        ev('approvata', { mio: true }),
-      ]);
+      seed([ev('mia', { mio: true, stato: 'InAttesa' }), ev('altrui', { stato: 'InAttesa' }), ev('approvata', { mio: true })]);
       api.getStati.mockReturnValue(of([{ id: 'mia', stato: 'Approvato' }]));
       const store = crea();
 

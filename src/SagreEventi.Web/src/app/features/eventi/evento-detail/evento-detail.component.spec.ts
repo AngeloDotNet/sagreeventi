@@ -1,11 +1,78 @@
 import { signal } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import axe from 'axe-core';
 import { MessageService } from 'primeng/api';
 import { EventiStore } from '../../../core/eventi-store/eventi-store.service';
 import { EventoLocale } from '../../../core/models/models';
 import { PermessiService } from '../../../core/permessi/permessi.service';
 import { EventoDetailComponent } from './evento-detail.component';
+
+/** Evento di prova con posizione facoltativa: senza coordinate il dettaglio non mostra la mappa. */
+const eventoConPosizione = (parziale: Partial<EventoLocale> = {}): EventoLocale => ({
+  id: 'a',
+  nomeEvento: 'Sagra della castagna',
+  cittaEvento: 'Soriano nel Cimino',
+  dataInizioEvento: '2026-10-24T00:00:00',
+  dataFineEvento: '2026-10-26T00:00:00',
+  descrizioneEvento: 'Caldarroste e vino novello',
+  eventoConcluso: false,
+  dataOraUltimaModifica: '2026-10-01T10:00:00Z',
+  stato: 'Approvato',
+  ...parziale,
+});
+
+describe('EventoDetailComponent posizione', () => {
+  const crea = (evento: EventoLocale): ComponentFixture<EventoDetailComponent> => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        MessageService,
+        { provide: EventiStore, useValue: { trova: () => evento, sincronizzando: signal(false), sincronizza: () => undefined } },
+        { provide: PermessiService, useValue: { puoModificare: signal(false) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(EventoDetailComponent);
+    fixture.componentRef.setInput('id', 'a');
+    fixture.detectChanges();
+    return fixture;
+  };
+
+  const linkMappa = (fixture: ComponentFixture<EventoDetailComponent>) =>
+    Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLAnchorElement>('a')).find((a) =>
+      a.textContent?.includes('Apri la mappa'),
+    );
+
+  it('shows the map when the event has coordinates, and the link to the exact point', () => {
+    const fixture = crea(eventoConPosizione({ latitudine: 41.5, longitudine: 12.25 }));
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-mappa')).not.toBeNull();
+    expect(linkMappa(fixture)?.href).toContain('query=41.5%2C12.25');
+  });
+
+  it('shows no map and links to the city when the event has no coordinates', () => {
+    const fixture = crea(eventoConPosizione());
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('app-mappa')).toBeNull();
+    expect(linkMappa(fixture)?.href).toContain(`query=${encodeURIComponent('Soriano nel Cimino')}`);
+  });
+
+  it('shows the address when the event has one', () => {
+    const fixture = crea(eventoConPosizione({ indirizzo: 'Piazza Municipio 1' }));
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Piazza Municipio 1');
+  });
+
+  it('has no serious accessibility violations, with the map shown', async () => {
+    const fixture = crea(eventoConPosizione({ indirizzo: 'Piazza Municipio 1', latitudine: 41.5, longitudine: 12.25 }));
+
+    // Il contrasto non si misura in jsdom (non c'è un layout reale): resta verificato a mano sul tema
+    const risultati = await axe.run(fixture.nativeElement as HTMLElement, { rules: { 'color-contrast': { enabled: false } } });
+    const gravi = risultati.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id);
+
+    expect(gravi).toEqual([]);
+  });
+});
 
 describe('EventoDetailComponent links', () => {
   const evento = (descrizioneEvento: string): EventoLocale => ({

@@ -13,13 +13,24 @@
     </a>
     <h1>{{ id() ? 'Modifica evento' : 'Segnala un evento' }}</h1>
     <p class="pagina-intro">
-      {{ id() ? 'Correggi i dati: la versione più recente sostituisce quella sul server.' : 'Compila i dati della sagra o del festival. Tutti i campi sono obbligatori.' }}
+      {{
+        id()
+          ? 'Correggi i dati: la versione più recente sostituisce quella sul server.'
+          : 'Compila i dati della sagra o del festival. Nome, città, date e descrizione sono obbligatori; indirizzo e coordinate sono facoltativi.'
+      }}
     </p>
 
     <form class="form" [formGroup]="form" (ngSubmit)="salva()" novalidate>
       <div class="campo">
         <label for="nome">Nome dell'evento</label>
-        <input pInputText id="nome" formControlName="nomeEvento" maxlength="200" autocomplete="off" placeholder="Sagra della castagna di Soriano" />
+        <input
+          pInputText
+          id="nome"
+          formControlName="nomeEvento"
+          maxlength="200"
+          autocomplete="off"
+          placeholder="Sagra della castagna di Soriano"
+        />
         @if (errore('nomeEvento'); as m) {
           <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
         }
@@ -27,7 +38,15 @@
 
       <div class="campo">
         <label for="citta">Città</label>
-        <input pInputText id="citta" formControlName="cittaEvento" maxlength="100" autocomplete="off" list="elenco-citta" placeholder="Soriano nel Cimino" />
+        <input
+          pInputText
+          id="citta"
+          formControlName="cittaEvento"
+          maxlength="100"
+          autocomplete="off"
+          list="elenco-citta"
+          placeholder="Soriano nel Cimino"
+        />
         <datalist id="elenco-citta">
           @for (c of store.citta(); track c) {
             <option [value]="c"></option>
@@ -38,17 +57,51 @@
         }
       </div>
 
+      <div class="campo">
+        <label for="indirizzo">Indirizzo (facoltativo)</label>
+        <input
+          pInputText
+          id="indirizzo"
+          formControlName="indirizzo"
+          [maxlength]="maxIndirizzo"
+          autocomplete="off"
+          placeholder="Piazza Municipio 1"
+          aria-describedby="indirizzo-aiuto"
+        />
+        <small id="indirizzo-aiuto" class="contatore">Più l'indirizzo è preciso, più la posizione sulla mappa sarà esatta.</small>
+        @if (errore('indirizzo'); as m) {
+          <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
+        }
+      </div>
+
       <div class="campo-coppia">
         <div class="campo">
           <label for="inizio">Primo giorno</label>
-          <p-datepicker inputId="inizio" formControlName="dataInizioEvento" dateFormat="dd/mm/yy" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" placeholder="gg/mm/aaaa" />
+          <p-datepicker
+            inputId="inizio"
+            formControlName="dataInizioEvento"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            iconDisplay="input"
+            [showButtonBar]="true"
+            placeholder="gg/mm/aaaa"
+          />
           @if (errore('dataInizioEvento'); as m) {
             <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
           }
         </div>
         <div class="campo">
           <label for="fine">Ultimo giorno</label>
-          <p-datepicker inputId="fine" formControlName="dataFineEvento" dateFormat="dd/mm/yy" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" [minDate]="inizio()" placeholder="gg/mm/aaaa" />
+          <p-datepicker
+            inputId="fine"
+            formControlName="dataFineEvento"
+            dateFormat="dd/mm/yy"
+            [showIcon]="true"
+            iconDisplay="input"
+            [showButtonBar]="true"
+            [minDate]="inizio()"
+            placeholder="gg/mm/aaaa"
+          />
           @if (errore('dataFineEvento'); as m) {
             <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
           }
@@ -58,9 +111,93 @@
         <p-message severity="error" variant="simple" size="small">L'ultimo giorno non può essere prima del primo.</p-message>
       }
 
+      <div class="campo-coppia">
+        <div class="campo">
+          <label for="latitudine">Latitudine (facoltativa)</label>
+          <p-inputnumber
+            inputId="latitudine"
+            formControlName="latitudine"
+            [min]="-90"
+            [max]="90"
+            [maxFractionDigits]="6"
+            [useGrouping]="false"
+            placeholder="41.123456"
+          />
+          @if (errore('latitudine'); as m) {
+            <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
+          }
+        </div>
+        <div class="campo">
+          <label for="longitudine">Longitudine (facoltativa)</label>
+          <p-inputnumber
+            inputId="longitudine"
+            formControlName="longitudine"
+            [min]="-180"
+            [max]="180"
+            [maxFractionDigits]="6"
+            [useGrouping]="false"
+            placeholder="12.123456"
+          />
+          @if (errore('longitudine'); as m) {
+            <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>
+          }
+        </div>
+      </div>
+      @if ((form.controls.latitudine.touched || form.controls.longitudine.touched) && form.hasError('coppiaCoordinate')) {
+        <p-message severity="error" variant="simple" size="small"
+          >Indica latitudine e longitudine insieme, oppure lasciale entrambe vuote.</p-message
+        >
+      }
+
+      <div class="campo">
+        <app-mappa
+          [modificabile]="true"
+          etichetta="Posizione dell'evento"
+          [latitudine]="latitudineMappa()"
+          [longitudine]="longitudineMappa()"
+          (sposta)="sposta($event)"
+        />
+        <small class="contatore"
+          >Tocca la mappa o trascina il segnaposto per indicare il punto. Puoi anche scrivere le coordinate qui sopra.</small
+        >
+        <div>
+          <p-button
+            label="Trova sulla mappa"
+            icon="pi pi-search"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="cercando()"
+            [disabled]="cercando() || !form.controls.cittaEvento.value.trim()"
+            (onClick)="trovaSullaMappa()"
+          />
+        </div>
+        @if (trovato(); as punto) {
+          <p-message severity="success" variant="simple" size="small"
+            >Trovato: {{ punto.nome || 'un punto con queste coordinate' }}. Controlla il punto sulla mappa.</p-message
+          >
+        }
+        @if (nessunRisultato()) {
+          <p-message severity="warn" variant="simple" size="small"
+            >Nessun risultato per questo indirizzo. Prova a scriverlo più preciso, oppure tocca la mappa.</p-message
+          >
+        }
+        @if (erroreRicerca()) {
+          <p-message severity="error" variant="simple" size="small"
+            >La ricerca non è disponibile adesso. Puoi salvare senza posizione o indicarla sulla mappa.</p-message
+          >
+        }
+      </div>
+
       <div class="campo">
         <label for="descrizione">Descrizione</label>
-        <textarea pTextarea id="descrizione" formControlName="descrizioneEvento" rows="7" maxlength="4000" placeholder="Cosa si mangia, che programma c'è, dove parcheggiare…"></textarea>
+        <textarea
+          pTextarea
+          id="descrizione"
+          formControlName="descrizioneEvento"
+          rows="7"
+          maxlength="4000"
+          placeholder="Cosa si mangia, che programma c'è, dove parcheggiare…"
+        ></textarea>
         <small class="contatore">{{ form.controls.descrizioneEvento.value.length }} / 4000</small>
         @if (errore('descrizioneEvento'); as m) {
           <p-message severity="error" variant="simple" size="small">{{ m }}</p-message>

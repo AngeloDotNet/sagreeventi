@@ -2,6 +2,38 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-14
+
+### GPS A2–A4 pubblicati (PR #67)
+
+**Perché:** chiudere la parte frontend del GPS: indirizzo, coordinate, mappa e ricerca indirizzi (le voci di dettaglio A2, A3 e A4 sono più sotto, nel loro giorno).
+**Cosa / Dove:** due commit sul branch `feature/gps-eventi` (`feat(eventi)` con codice e test, `docs(gps)` con README e CHANGELOG), uniti in `develop` con squash `961d714`; branch remoto, worktree e branch locale rimossi.
+**Verifica:** nel worktree prima della PR: 455 test su 24 file, lint pulito, build di produzione senza errori. La CI della PR non è stata letta da me.
+**Note:** restano la migrazione `AddPosizioneEventi` da applicare a un SQL Server reale, la CSP con la mappa (`PLAN-security-headers.md`) e il contrasto del segnaposto sui temi, da provare nel browser.
+
+### Annotati in `CLAUDE.md` tre MUST non rispettati (D5)
+
+**Perché:** il confronto regole-codice del 2026-11-14 ha trovato scostamenti che vanno registrati in «Lavoro da pianificare», senza adeguare il codice di iniziativa.
+**Cosa / Dove:** `CLAUDE.md`, sezione «Lavoro da pianificare»: sessione bearer in `sessionStorage`, CORS con `AllowAnyHeader`/`AllowAnyMethod` senza `SetPreflightMaxAge`, versione di Node non fissata.
+**Verifica:** solo documentazione, nessuna build. Nessun commit.
+**Note:** restano in `CHECKLIST.md` gli altri punti del confronto (`UseStatusCodePages`, analyzer e `dotnet format` in CI, `traceId` già in `PLAN-trace-id.md`).
+
+### Regole riallineate al template (core 3.44, git 1.9)
+
+**Perché:** il template aveva moduli più recenti (`core.md` 3.44, `git.md` 1.9, `lavoro.md` 1.3, `security.md` 2.5 e altri) rispetto alle copie del progetto.
+**Cosa / Dove:** `.claude/rules/` aggiornati dal template: `core`, `git`, `lavoro`, `security`, `security-backend`, `security-frontend`, `backend`, `backend-app`, `frontend`, `docker` (qui resta in `rules/`, nel template è in `rules-optional/`); `.claude/rules-optional/`: `backend-infra` e `feature-workflow` (due righe ciascuno). Invariati `backend-architecture` e `backend-email`. `CLAUDE.md`: riga «Versione delle regole copiate» (`core.md` v3.44 del 2026-11-14) e nota che `docker` è attivo per scelta del progetto.
+**Verifica:** solo documentazione, nessuna build. I vecchi file sono stati salvati come `.bak` e poi cancellati su richiesta.
+**Note:** le nuove copie hanno fine riga LF, le vecchie CRLF: git può mostrare diff più ampi del reale. Non rilette le novità di `backend.md`, `frontend.md` e dei moduli di sicurezza rispetto al codice esistente (D5: si annota, senza adeguare il codice di iniziativa). Nessun commit.
+
+## 2026-11-13
+
+### Release 1.1.0 chiusa: merge su `main`, tag e rilascio GitHub
+
+**Perché:** portare in produzione la 1.1.0 preparata il 2026-11-12 e riallineare `develop` a `main`, che dopo i merge di release conteneva commit mancanti in `develop` (rischio di conflitti `add/add` alla release successiva).
+**Cosa / Dove:** nessun cambio al codice applicativo. PR #62 (fix layout Gestione / Temi, squash), #63 e #65 (`main` in `develop`, merge commit), #64 (`release/1.1.0` in `main`, merge commit `4089a8a`). Tag annotato `1.1.0` su `4089a8a`, pushato, e rilascio GitHub con le note della voce «Rilascio 1.1.0». `CLAUDE.md`: righe «Versione delle regole copiate» (`core.md` v3.39) e «Moduli rimossi o non attivati». Dependabot ha aperto la PR #66 (`@hono/node-server` 2.1.5 → 2.1.8, dipendenza indiretta solo di sviluppo), unita in `develop` con squash (`17a01bc`).
+**Verifica:** esito della pipeline `build-push.yml` sul tag `1.1.0` **non letto** (immagini su Docker Hub e versione in Informazioni da controllare a mano); dopo #66 non rieseguiti `npm ci --ignore-scripts` e `npm test`; backend non rieseguito dopo i merge (429 test, 0 avvisi prima).
+**Note:** le note del rilascio GitHub non hanno la riga sul layout Temi nella sezione «Corretto» (è in questo file ma non nella voce di rilascio). Il corpo del merge `a9b6aec` dice per errore «No conflicts expected» (il conflitto su `CHANGELOG.md` c'è stato ed è stato risolto); il commit non si riscrive.
+
 ## 2026-11-12
 
 ### Rilascio 1.1.0
@@ -119,6 +151,27 @@ Prima release con tag: la versione mostrata nella pagina Informazioni segue il t
 **Note (passo 3):** un tag su un commit vecchio o fuori da `main` aggiorna comunque `latest`: oggi non c'è nessun controllo.
 
 ## 2026-11-09
+
+### GPS: documentazione e revisione di sicurezza (fase A4)
+
+**Perché:** la mappa manda dati a servizi esterni (tile OpenStreetMap, ricerca Nominatim, Google Maps dal link) e la CSP futura dovrà sapere quali domini ammettere. Gli utenti devono sapere cosa succede dei loro dati e dove si cambiano i servizi.
+**Cosa / Dove:** `README.md` (funzionalità «Posizione su mappa», avviso sui servizi esterni, riga «Mappa» nella tabella della documentazione, link «Apri il punto sulla mappa»). Pagina wiki `docs/sagreeventi/mappa.md` (nella wiki, `E:\Disco_E\Progetti\wiki`). `docs/piani/PLAN-security-headers.md` (nota sui domini e sui punti da verificare per la CSP, fuori da questo repository, non committata). `docs/piani/PLAN-gps.md` (A4 spuntato).
+**Verifica:** solo documentazione e piani, nessun codice toccato, quindi nessuna build né test nuovi. `/security-review` sulle modifiche GPS (A1–A3): nessun problema con confidenza alta. Verificato: il backend valida indirizzo (caratteri di controllo, 200 caratteri), coppia di coordinate e decimali; il link Google Maps codifica la query; `config.json` accetta solo `https://`; nessun `innerHTML`, `bypassSecurityTrust` né HTML costruito con dati dell'utente; il nome restituito da Nominatim è mostrato come testo.
+**Note:** la review ha guardato il codice e non ha eseguito un test di exploit nel browser. Restano aperti in `CHECKLIST.md`: CSP con la mappa, contrasto del segnaposto sui temi, licenze delle nuove dipendenze e UX di `p-inputnumber`.
+
+### GPS: mappa, ricerca indirizzi e configurazione dei servizi (fase A3)
+
+**Perché:** un evento con posizione va visto su mappa; chi segnala deve poter trovare il punto senza digitare le coordinate, e la mappa deve poter cambiare provider senza ripubblicare l'app.
+**Cosa / Dove:** `shared/mappa/` (componente `app-mappa`: Leaflet caricato con import dinamico, marcatore `divIcon` senza immagini di default, testo con le coordinate sempre presente, errore gestito se la mappa non si carica, spostamento del punto con tocco o trascinamento in modalità modificabile). `features/eventi/evento-detail/` (mappa quando ci sono le coordinate, riga «Indirizzo», link «Apri la mappa» con il punto esatto, da scelta dell'utente: Google Maps con le coordinate, senza coordinate la città). `features/eventi/evento-form/` (mappa modificabile, pulsante «Trova sulla mappa»: una richiesta per clic, esito «Trovato», «Nessun risultato» o «non disponibile», salvataggio possibile senza posizione). `core/geocoding.service.ts` (Nominatim: risultati in cache per query normalizzata, richieste in fila a una al secondo per tutta l'app, risposte malformate ridotte a `null`, nome troncato a 200 caratteri). `core/config.service.ts` e `public/config.json` (`mappa.tileUrl` e `mappa.nominatimUrl`, accettati solo in `https://`, tile con `{z}`, `{x}`, `{y}`; altrimenti restano i default). `angular.json` (foglio di stile di Leaflet globale; `allowedCommonJsDependencies: ["leaflet"]`). `package.json` e `package-lock.json`: `leaflet` 1.9.4 (BSD-2-Clause), `@types/leaflet` 1.9.22 (MIT) e `axe-core` 4.14.0 (MPL-2.0, solo sviluppo).
+**Verifica:** `ng test`: 433 superati (22 file), con test del servizio (cache, limite di frequenza con timer finti, risposte malformate, query come parametro e non nell'URL), della configurazione (URL `javascript:`, `http://`, tile senza segnaposto), del componente mappa, del dettaglio (mappa e link con coordinate, test axe senza violazioni gravi sulla pagina con la mappa) e del form (ricerca, esito, nome restituito mostrato come testo). Lint pulito; build di produzione senza errori; Leaflet in un chunk separato (`leaflet-src`) che non pesa sul caricamento iniziale. `npm audit --omit=dev`: 0 vulnerabilità nelle dipendenze di runtime; le 28 moderate sono quelle già presenti nel lock file di `develop`.
+**Note:** axe non misura il contrasto in jsdom: il contrasto va verificato a mano sui temi. Il CSP non è ancora aggiornato: Leaflet imposta stili inline e le tile arrivano da un dominio esterno (vedi `PLAN-security-headers.md`). La licenza delle nuove dipendenze va riverificata con lo strumento di `core.md` §3 prima della release.
+
+### GPS: indirizzo e coordinate nel modello e nel form (fase A2)
+
+**Perché:** il backend accetta indirizzo e coordinate dall'A1, ma il frontend non li conosceva: il form non li chiedeva, lo store li perdeva a ogni sincronizzazione e non li inviava al server.
+**Cosa / Dove:** `core/models.ts` (campi `indirizzo`, `latitudine`, `longitudine` in `Evento` e in `EventoDraft`), `core/evento-utils.ts` (`toApiPayload` invia i tre campi, `null` se assenti; funzioni pure `indirizzoValido`, `senzaCaratteriDiControllo`, `gradoValido`, `coordinateValide`, limite `MAX_INDIRIZZO` = 200), `core/eventi-store.service.ts` (`normalizza` copia i tre campi dal server), `features/eventi/evento-form/` (campo Indirizzo facoltativo con il suggerimento sulla precisione; latitudine e longitudine facoltative, numeriche, con limiti e massimo 6 decimali; coppia obbligatoria insieme o vuota entrambe; indirizzo senza caratteri di controllo e al massimo 200 caratteri; testo introduttivo corretto).
+**Verifica:** `ng test`: 388 superati (20 file); lint pulito; build di produzione senza errori. Nuovi test: payload con e senza posizione, pull che conserva posizione, validatori puri, form (precompilazione in modifica, invio con indirizzo ripulito, campo vuoto come `null`, caratteri di controllo, oltre 200 caratteri, coppia incompleta, intervalli, più di 6 decimali, markup trattato come testo).
+**Note:** lo snapshot locale resta `version: 1`: i tre campi sono facoltativi, quindi gli snapshot esistenti restano validi senza migrazione. Nel form le coordinate si digitano a mano; la scelta dal punto sulla mappa arriva con A3. Prettier applicato ai file toccati con `tabWidth` 2 (come il frontend), con qualche riga non modificata riformattata nei file di test toccati.
 
 ### Periodi dei temi: scheda «Temi» per l'Admin e chiusura del piano (passi 5 e 6)
 
