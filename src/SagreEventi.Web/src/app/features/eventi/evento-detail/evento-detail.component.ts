@@ -17,10 +17,11 @@ import {
 import { buildIcs, nomeFileSicuro, scaricaFile } from '../../../core/ics/ics';
 import { primoLink, segmentaTesto } from '../../../core/link-utils/link-utils';
 import { EmptyStateComponent } from '../../../shared/empty-state/empty-state.component';
+import { MappaComponent } from '../../../shared/mappa/mappa.component';
 
 @Component({
   selector: 'app-evento-detail',
-  imports: [RouterLink, ButtonModule, TagModule, EmptyStateComponent],
+  imports: [RouterLink, ButtonModule, TagModule, EmptyStateComponent, MappaComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './evento-detail.component.html',
 })
@@ -65,16 +66,28 @@ export class EventoDetailComponent {
   protected readonly descrizione = computed(() => segmentaTesto(this.evento()?.descrizioneEvento ?? ''));
   /** First link of the description: it also becomes a button next to the other actions. */
   protected readonly linkPrincipale = computed(() => primoLink(this.descrizione()));
+  /** Posizione dell'evento, se è stata indicata (latitudine e longitudine insieme). */
+  protected readonly posizione = computed(() => {
+    const e = this.evento();
+    return e && e.latitudine != null && e.longitudine != null ? { latitudine: e.latitudine, longitudine: e.longitudine } : null;
+  });
+  /** Link «Apri la mappa»: sul punto esatto quando c'è, altrimenti sulla città. */
   protected readonly urlMappa = computed(() => {
     const e = this.evento();
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e?.cittaEvento ?? '')}`;
+    const query = this.posizione() ? `${this.posizione()?.latitudine},${this.posizione()?.longitudine}` : (e?.cittaEvento ?? '');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   });
 
   protected aggiungiAlCalendario(): void {
     const e = this.evento();
     if (!e) return;
     scaricaFile(`${nomeFileSicuro(e.nomeEvento)}.ics`, buildIcs(e), 'text/calendar;charset=utf-8');
-    this.messaggi.add({ severity: 'success', summary: 'File del calendario scaricato', detail: 'Aprilo per aggiungere l\'evento.', life: 4000 });
+    this.messaggi.add({
+      severity: 'success',
+      summary: 'File del calendario scaricato',
+      detail: "Aprilo per aggiungere l'evento.",
+      life: 4000,
+    });
   }
 
   protected async condividi(): Promise<void> {

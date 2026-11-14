@@ -25,6 +25,12 @@
             <dt>Dove</dt>
             <dd>{{ e.cittaEvento }}</dd>
           </div>
+          @if (e.indirizzo) {
+            <div>
+              <dt>Indirizzo</dt>
+              <dd>{{ e.indirizzo }}</dd>
+            </div>
+          }
           <div>
             <dt>Quando</dt>
             <dd>{{ periodo() }}</dd>
@@ -37,6 +43,10 @@
 
         <p class="dettaglio-descrizione">@for (s of descrizione(); track $index) {@if (s.tipo === 'link') {<a class="link-descrizione" [href]="s.url" target="_blank" rel="noopener noreferrer" [attr.title]="s.url">{{ s.host }}<i class="pi pi-external-link" aria-hidden="true"></i></a>} @else {{{ s.testo }}}}</p>
         <p class="dettaglio-nota">Dal {{ inizioLungo() }} al {{ fineLunga() }}.</p>
+
+        @if (posizione(); as p) {
+          <app-mappa [latitudine]="p.latitudine" [longitudine]="p.longitudine" [etichetta]="'Posizione di ' + e.nomeEvento" />
+        }
       </div>
 
       <aside class="dettaglio-azioni" aria-label="Azioni">

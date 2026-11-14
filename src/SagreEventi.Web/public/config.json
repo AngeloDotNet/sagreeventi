@@ -1,3 +1,7 @@
 {
-  "apiBaseUrl": ""
+  "apiBaseUrl": "",
+  "mappa": {
+    "tileUrl": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "nominatimUrl": "https://nominatim.openstreetmap.org/search"
+  }
 }
