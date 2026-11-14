@@ -11,6 +11,9 @@ import {
   nuovoId,
   parseLocalDate,
   parseUtc,
+  MAX_INDIRIZZO,
+  coordinateValide,
+  indirizzoValido,
   startOfToday,
   statoEvento,
   statoLabel,
@@ -199,10 +202,65 @@ describe('evento-utils', () => {
           'descrizioneEvento',
           'eventoConcluso',
           'id',
+          'indirizzo',
+          'latitudine',
+          'longitudine',
           'nomeEvento',
         ].sort(),
       );
       expect(payload.nomeEvento).toBe('Sagra');
+    });
+
+    it('sends the position fields, and null for the ones not set', () => {
+      const conPosizione = toApiPayload({ ...evento(), indirizzo: 'Piazza Municipio 1', latitudine: 41.5, longitudine: 12.25 });
+      const senzaPosizione = toApiPayload(evento());
+
+      expect(conPosizione).toMatchObject({ indirizzo: 'Piazza Municipio 1', latitudine: 41.5, longitudine: 12.25 });
+      expect(senzaPosizione).toMatchObject({ indirizzo: null, latitudine: null, longitudine: null });
+    });
+  });
+
+  describe('indirizzoValido', () => {
+    it('accepts an address up to the limit', () => {
+      expect(indirizzoValido('Via Roma 1')).toBe(true);
+      expect(indirizzoValido('a'.repeat(MAX_INDIRIZZO))).toBe(true);
+    });
+
+    it('rejects an address over the limit', () => {
+      expect(indirizzoValido('a'.repeat(MAX_INDIRIZZO + 1))).toBe(false);
+    });
+
+    it.each(['Via\nRoma', 'Via\rRoma', 'Via\tRoma', 'Via\u0000Roma', 'Via\u007fRoma'])('rejects control characters in %j', (testo) => {
+      expect(indirizzoValido(testo)).toBe(false);
+    });
+
+    it('accepts markup as plain text: it is shown as text, never as HTML', () => {
+      // L'indirizzo è testo: `<` e `>` non sono caratteri di controllo, ma il template li mostra come testo
+      expect(indirizzoValido('<img src=x onerror=alert(1)>')).toBe(true);
+    });
+  });
+
+  describe('coordinateValide', () => {
+    it('accepts both coordinates within the limits, or neither', () => {
+      expect(coordinateValide(41.123456, 12.123456)).toBe(true);
+      expect(coordinateValide(-90, 180)).toBe(true);
+      expect(coordinateValide(null, null)).toBe(true);
+    });
+
+    it('rejects only one of the two coordinates', () => {
+      expect(coordinateValide(41.5, null)).toBe(false);
+      expect(coordinateValide(null, 12.5)).toBe(false);
+    });
+
+    it.each([
+      [90.000001, 0],
+      [0, 180.5],
+      [-91, 0],
+      [NaN, 0],
+      [Infinity, 0],
+      [41.1234567, 12],
+    ])('rejects latitude %s and longitude %s out of range or with too many decimals', (lat, lng) => {
+      expect(coordinateValide(lat, lng)).toBe(false);
     });
   });
 

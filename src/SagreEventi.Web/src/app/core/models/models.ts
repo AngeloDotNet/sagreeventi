@@ -14,6 +14,12 @@ export interface Evento {
   stato?: StatoModerazione;
   /** Nota di rifiuto (solo storico): la restituiscono solo gli endpoint di revisione, mai quelli pubblici. */
   motivoRifiuto?: string | null;
+  /** Indirizzo facoltativo (al massimo 200 caratteri). Il server lo restituisce solo per gli eventi approvati nelle risposte pubbliche. */
+  indirizzo?: string | null;
+  /** Latitudine in gradi (-90..90), facoltativa: sempre insieme alla longitudine. */
+  latitudine?: number | null;
+  /** Longitudine in gradi (-180..180), facoltativa: sempre insieme alla latitudine. */
+  longitudine?: number | null;
 }
 
 /** Stato di moderazione di un evento segnalato (valori dell'enum `StatoModerazione` del server). */
@@ -42,7 +48,7 @@ export interface EventoLocale extends Evento {
 /** Campi che l'utente compila nel form. */
 export type EventoDraft = Pick<
   Evento,
-  'nomeEvento' | 'cittaEvento' | 'dataInizioEvento' | 'dataFineEvento' | 'descrizioneEvento'
+  'nomeEvento' | 'cittaEvento' | 'dataInizioEvento' | 'dataFineEvento' | 'descrizioneEvento' | 'indirizzo' | 'latitudine' | 'longitudine'
 >;
 
 export type StatoEvento = 'in-corso' | 'in-arrivo' | 'terminato';

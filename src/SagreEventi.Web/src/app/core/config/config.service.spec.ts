@@ -72,6 +72,61 @@ describe('ConfigService', () => {
     expect(service.apiBaseUrl()).toBe('');
   });
 
+  describe('mappa', () => {
+    const TILE = 'https://tiles.example.com/{z}/{x}/{y}.png';
+    const NOMINATIM = 'https://search.example.com/search';
+
+    it('defaults to the OpenStreetMap services', () => {
+      expect(service.mappa().tileUrl).toBe('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+      expect(service.mappa().nominatimUrl).toBe('https://nominatim.openstreetmap.org/search');
+    });
+
+    it('reads the map services from config.json', async () => {
+      fetchMock.mockResolvedValue(risposta({ apiBaseUrl: '', mappa: { tileUrl: TILE, nominatimUrl: NOMINATIM } }));
+
+      await service.load();
+
+      expect(service.mappa()).toEqual({ tileUrl: TILE, nominatimUrl: NOMINATIM });
+    });
+
+    it.each([
+      ['a javascript: URL', 'javascript:alert(1)'],
+      ['an http URL', 'http://tiles.example.com/{z}/{x}/{y}.png'],
+      ['a URL without the tile placeholders', 'https://tiles.example.com/immagine.png'],
+      ['a number', 42],
+      ['null', null],
+    ])('keeps the default tile URL when it is %s', async (_nome, valore) => {
+      fetchMock.mockResolvedValue(risposta({ mappa: { tileUrl: valore, nominatimUrl: NOMINATIM } }));
+
+      await service.load();
+
+      expect(service.mappa().tileUrl).toBe('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+      expect(service.mappa().nominatimUrl).toBe(NOMINATIM);
+    });
+
+    it.each([
+      ['a javascript: URL', 'javascript:alert(1)'],
+      ['an http URL', 'http://search.example.com/search'],
+      ['an object', { url: NOMINATIM }],
+    ])('keeps the default search URL when it is %s', async (_nome, valore) => {
+      fetchMock.mockResolvedValue(risposta({ mappa: { tileUrl: TILE, nominatimUrl: valore } }));
+
+      await service.load();
+
+      expect(service.mappa().nominatimUrl).toBe('https://nominatim.openstreetmap.org/search');
+      expect(service.mappa().tileUrl).toBe(TILE);
+    });
+
+    it('keeps the defaults when the mappa section is missing', async () => {
+      fetchMock.mockResolvedValue(risposta({ apiBaseUrl: 'https://api.example.com' }));
+
+      await service.load();
+
+      expect(service.apiBaseUrl()).toBe('https://api.example.com');
+      expect(service.mappa().tileUrl).toBe('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+    });
+  });
+
   it('keeps the default when the request fails', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 

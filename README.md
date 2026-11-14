@@ -28,11 +28,15 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 - **Modificare gli eventi:** solo dopo l'accesso come `Admin` o `Editor`. Le modifiche anonime a eventi esistenti sono rifiutate dall'API (`403`).
 - **Conclusione automatica:** il server conclude un evento quando la data di fine è passata. Un evento concluso non può più essere modificato da nessuno e l'API non ha la cancellazione.
 - **Link nelle descrizioni:** gli indirizzi web scritti nella descrizione diventano link cliccabili (con il nome del sito) e il dettaglio ha un pulsante per aprire il programma.
-- **Portarlo con sé:** aggiungi un evento al calendario (`.ics`), apri la città su una mappa, condividilo.
+- **Posizione su mappa:** un evento può avere indirizzo e coordinate. Il dettaglio mostra il punto su una mappa OpenStreetMap; chi segnala o modifica può indicarlo toccando la mappa o cercando l'indirizzo. Senza rete la mappa non si carica, ma le coordinate restano scritte.
+- **Portarlo con sé:** aggiungi un evento al calendario (`.ics`), apri il punto sulla mappa (o la città), condividilo.
 - **Funziona offline:** tutto ciò che vedi è salvato sul dispositivo e si sincronizza quando torna la connessione, quando riapri l'app e ogni 10 minuti se la pagina è aperta.
 - **Installabile (PWA):** aggiungila alla schermata Home del telefono o installala sul desktop; l'app si apre anche senza rete e una nuova versione viene segnalata nella barra in alto.
 - **Interfaccia accessibile:** interfaccia in italiano, tema chiaro e scuro, utilizzabile da tastiera e con screen reader, adattata fino al telefono.
 - **Informazioni sull'app:** la pagina `/informazioni` mostra la versione dell'app e la data di rilascio, prese dal tag di rilascio `X.Y.Z` (o da `package.json` nelle build senza tag) e dalla data di build, senza chiamate al server.
+
+> [!NOTE]
+> La mappa usa le tile di OpenStreetMap e, per la ricerca di un indirizzo, il servizio Nominatim. Il browser invia a questi servizi l'indirizzo IP e, nella ricerca, il testo digitato. Il link «Apri la mappa» porta a Google Maps. I servizi si cambiano in `public/config.json` (sezione `mappa`) e vanno rispettate le loro condizioni d'uso; la configurazione è descritta nella [pagina Mappa](http://wiki.aepserver.it/sagreeventi/mappa).
 
 ## Documentazione
 
@@ -45,6 +49,7 @@ La soluzione ha un'API ASP.NET Core (solo API, nessuna interfaccia ospitata) e u
 | [API](http://wiki.aepserver.it/sagreeventi/api) | Endpoint e forma dell'evento |
 | [Sviluppo](http://wiki.aepserver.it/sagreeventi/sviluppo) | Build, test e migrazioni del database |
 | [Configurazione](http://wiki.aepserver.it/sagreeventi/configurazione) | Impostazioni e variabili d'ambiente |
+| [Mappa](http://wiki.aepserver.it/sagreeventi/mappa) | Posizione degli eventi, ricerca indirizzi e servizi esterni della mappa |
 | [Deployment](http://wiki.aepserver.it/sagreeventi/deployment) | Immagini Docker, compose e nginx; procedura passo passo in [DEPLOY.md](DEPLOY.md) |
 
 ## Per iniziare

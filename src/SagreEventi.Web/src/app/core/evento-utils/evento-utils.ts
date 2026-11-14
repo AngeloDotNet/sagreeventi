@@ -104,7 +104,10 @@ export function durataGiorni(e: Pick<Evento, 'dataInizioEvento' | 'dataFineEvent
 
 /** Minuscolo e senza accenti, per ricerche tolleranti. */
 export function normalizzaTesto(s: string): string {
-  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 }
 
 export function confrontaPerInizio(a: Evento, b: Evento): number {
@@ -122,7 +125,40 @@ export function toApiPayload(e: EventoLocale): Evento {
     descrizioneEvento: e.descrizioneEvento,
     eventoConcluso: e.eventoConcluso,
     dataOraUltimaModifica: e.dataOraUltimaModifica,
+    indirizzo: e.indirizzo ?? null,
+    latitudine: e.latitudine ?? null,
+    longitudine: e.longitudine ?? null,
   };
+}
+
+/** Lunghezza massima dell'indirizzo, come `EventoModel.MaxIndirizzoLength` sul server. */
+export const MAX_INDIRIZZO = 200;
+
+/** Indirizzo accettato: al massimo `MAX_INDIRIZZO` caratteri e nessun carattere di controllo. */
+export function indirizzoValido(testo: string): boolean {
+  return testo.length <= MAX_INDIRIZZO && senzaCaratteriDiControllo(testo);
+}
+
+/** Nessun carattere di controllo (a capo, tabulazione, NUL e simili). */
+export function senzaCaratteriDiControllo(testo: string): boolean {
+  for (const carattere of testo) {
+    const codice = carattere.codePointAt(0) ?? 0;
+    if (codice < 32 || codice === 127) return false;
+  }
+  return true;
+}
+
+/** Coordinate valide: entrambe assenti oppure entrambe finite, nei limiti, con al massimo 6 decimali. */
+export function coordinateValide(latitudine: number | null, longitudine: number | null): boolean {
+  if (latitudine === null && longitudine === null) return true;
+  if (latitudine === null || longitudine === null) return false;
+  return gradoValido(latitudine, 90) && gradoValido(longitudine, 180);
+}
+
+/** Un singolo valore in gradi: finito, nei limiti e con al massimo 6 cifre decimali (la scala del server). */
+export function gradoValido(valore: number, limite: number): boolean {
+  if (!Number.isFinite(valore) || Math.abs(valore) > limite) return false;
+  return Math.abs(valore * 1_000_000 - Math.round(valore * 1_000_000)) < 1e-6;
 }
 
 export function nuovoId(): string {
@@ -145,20 +181,44 @@ interface Motivo {
 }
 
 const MOTIVI: Motivo[] = [
-  { re: /\b(vino|vini|vendemmia|cantin\w*|calici|degustazion\w* di vin\w*|uva)\b/, emoji: '🍷', gradient: 'linear-gradient(135deg,#6c1d35,#c2416a)' },
+  {
+    re: /\b(vino|vini|vendemmia|cantin\w*|calici|degustazion\w* di vin\w*|uva)\b/,
+    emoji: '🍷',
+    gradient: 'linear-gradient(135deg,#6c1d35,#c2416a)',
+  },
   { re: /\b(birra|birre|birrific\w*|luppol\w*)\b/, emoji: '🍺', gradient: 'linear-gradient(135deg,#92400e,#f5a524)' },
   { re: /\b(pizza|pizze)\b/, emoji: '🍕', gradient: 'linear-gradient(135deg,#9a3412,#f97316)' },
   { re: /\b(tartuf\w*|funghi|fungo|porcin\w*)\b/, emoji: '🍄', gradient: 'linear-gradient(135deg,#3f2a1d,#a16207)' },
   { re: /\b(castagn\w*|marron\w*)\b/, emoji: '🌰', gradient: 'linear-gradient(135deg,#5b3a1e,#b45309)' },
   { re: /\b(olio|oliv\w*|frantoi\w*)\b/, emoji: '🫒', gradient: 'linear-gradient(135deg,#365314,#84a82a)' },
   { re: /\b(formagg\w*|latte|latticin\w*|pecorin\w*|mozzarell\w*)\b/, emoji: '🧀', gradient: 'linear-gradient(135deg,#a16207,#facc15)' },
-  { re: /\b(pesce|pesci|mare|sardin\w*|acciugh\w*|frutti di mare|baccal\w*)\b/, emoji: '🐟', gradient: 'linear-gradient(135deg,#0c4a6e,#38bdf8)' },
-  { re: /\b(porchett\w*|salsicc\w*|carne|bistecc\w*|arrost\w*|grigliat\w*|salum\w*|prosciutt\w*|maial\w*)\b/, emoji: '🥩', gradient: 'linear-gradient(135deg,#7f1d1d,#ef4444)' },
+  {
+    re: /\b(pesce|pesci|mare|sardin\w*|acciugh\w*|frutti di mare|baccal\w*)\b/,
+    emoji: '🐟',
+    gradient: 'linear-gradient(135deg,#0c4a6e,#38bdf8)',
+  },
+  {
+    re: /\b(porchett\w*|salsicc\w*|carne|bistecc\w*|arrost\w*|grigliat\w*|salum\w*|prosciutt\w*|maial\w*)\b/,
+    emoji: '🥩',
+    gradient: 'linear-gradient(135deg,#7f1d1d,#ef4444)',
+  },
   { re: /\b(cioccolat\w*|dolc\w*|torta|torte|gelat\w*|miele)\b/, emoji: '🍫', gradient: 'linear-gradient(135deg,#4a2c2a,#b8654b)' },
   { re: /\b(pane|pani|farina|grano|forno)\b/, emoji: '🥖', gradient: 'linear-gradient(135deg,#854d0e,#e8b04a)' },
-  { re: /\b(mele|mela|pere|ciliegi\w*|fragol\w*|frutta|pesche|albicocch\w*)\b/, emoji: '🍎', gradient: 'linear-gradient(135deg,#991b1b,#f87171)' },
-  { re: /\b(pasta|tortellin\w*|gnocch\w*|ravioli|polenta|risott\w*|riso)\b/, emoji: '🍝', gradient: 'linear-gradient(135deg,#a16207,#fb923c)' },
-  { re: /\b(zucca|zucche|patat\w*|ortaggi|carciof\w*|asparag\w*|radicchi\w*)\b/, emoji: '🥬', gradient: 'linear-gradient(135deg,#14532d,#4ade80)' },
+  {
+    re: /\b(mele|mela|pere|ciliegi\w*|fragol\w*|frutta|pesche|albicocch\w*)\b/,
+    emoji: '🍎',
+    gradient: 'linear-gradient(135deg,#991b1b,#f87171)',
+  },
+  {
+    re: /\b(pasta|tortellin\w*|gnocch\w*|ravioli|polenta|risott\w*|riso)\b/,
+    emoji: '🍝',
+    gradient: 'linear-gradient(135deg,#a16207,#fb923c)',
+  },
+  {
+    re: /\b(zucca|zucche|patat\w*|ortaggi|carciof\w*|asparag\w*|radicchi\w*)\b/,
+    emoji: '🥬',
+    gradient: 'linear-gradient(135deg,#14532d,#4ade80)',
+  },
 ];
 
 const FALLBACK: { emoji: string; gradient: string }[] = [

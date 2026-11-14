@@ -225,6 +225,9 @@ function normalizza(r: Evento): EventoLocale {
     eventoConcluso: !!r.eventoConcluso,
     dataOraUltimaModifica: r.dataOraUltimaModifica,
     stato: r.stato,
+    indirizzo: r.indirizzo ?? null,
+    latitudine: r.latitudine ?? null,
+    longitudine: r.longitudine ?? null,
     dirty: false,
   };
 }
