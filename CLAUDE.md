@@ -1,8 +1,8 @@
 # Istruzioni per Claude
 
-Le regole generali sono in `.claude/rules/` (`core`, `backend`, `frontend`, `security`, `security-backend`, `security-frontend`, `docker`, `git`, `lavoro`) e nei moduli opzionali `.claude/rules-optional/backend-email.md` e `.claude/rules-optional/backend-infra.md` (solo la parte sulla cache). In caso di conflitto prevale questo file.
+Le regole generali sono in `.claude/rules/` (`core`, `backend`, `frontend`, `security`, `security-backend`, `security-frontend`, `docker`, `git`, `lavoro`) e nei moduli opzionali `.claude/rules-optional/backend-email.md` e `.claude/rules-optional/backend-infra.md` (solo la parte sulla cache). `docker` è attivo per scelta del progetto (nel template è opzionale e sta in `rules-optional/`). In caso di conflitto prevale questo file.
 
-- **Versione delle regole copiate:** `core.md` v3.39 del 2026-11-13
+- **Versione delle regole copiate:** `core.md` v3.44 del 2026-11-14
 - **Moduli rimossi o non attivati (fuori ambito):** `feature-workflow` (solo copia di riferimento); `backend-email` attivo, `backend-infra` solo per la cache, come da «Moduli opzionali»
 
 - All'inizio di un lavoro leggi `CHANGELOG.md`: riassume le modifiche passate e il contesto, evita di rileggere il codice già noto.
@@ -75,6 +75,9 @@ Allineamento del 2026-11-06 alle regole aggiornate del template (decisione D5: s
 - **`pageSize` con massimo imposto dal server** (`backend-app.md` §4.3): non trovato nel codice dell'endpoint di lista. Da verificare.
 - **`SECURITY.md` e `docs/runbook-sicurezza.md`** (`security.md`, «Segnalazioni e risposta agli incidenti»; `core.md` §0b): non presenti. Contatti e tempi li fornisce l'utente.
 - **Threat model leggero (ADR) per le funzionalità sensibili** (`core.md` §0b, `security.md`): regola di processo. Da applicare alle prossime funzionalità che toccano autenticazione, dati personali, upload o integrazioni esterne.
+- **Sessione bearer in `sessionStorage`** (`security-frontend.md` 1.2): oggi `auth.service.ts` tiene il token in `sessionStorage`, che la regola vieta. Non rispettato: da decidere se serve una deroga motivata o una modifica (piano dedicato).
+- **CORS** (`security-backend.md`): oggi `AllowAnyHeader` e `AllowAnyMethod`, senza `SetPreflightMaxAge`. Non rispettato: elenco esplicito di header e metodi e durata del preflight.
+- **Versione di Node non fissata** (`frontend.md`): niente `.nvmrc` né `.npmrc` con `engine-strict`, `engines` su tre maggiori. Non rispettato; da coordinare con `PLAN-aggiornamento-angular.md` e `PLAN-tag-docker.md` (nota: il `.nvmrc` è stato provato e ritirato il 2026-10-31).
 
 ## Qualità del codice
 - Seguire i principi SOLID
