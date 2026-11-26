@@ -29,6 +29,9 @@ describe('EventoFormComponent moderation notice', () => {
     const fixture: ComponentFixture<EventoFormComponent> = TestBed.createComponent(EventoFormComponent);
     if (id) fixture.componentRef.setInput('id', id);
     fixture.detectChanges();
+    // The notice lives in the last step of the stepper
+    fixture.componentInstance['passo'].set(3);
+    fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   };
 
@@ -123,6 +126,12 @@ describe('EventoFormComponent posizione', () => {
     });
   };
 
+  /** Shows a step of the stepper: messages are rendered inside the panel of their step, and only the last step saves. */
+  const vai = (fixture: ComponentFixture<EventoFormComponent>, passo: 1 | 2 | 3) => {
+    fixture.componentInstance['passo'].set(passo);
+    fixture.detectChanges();
+  };
+
   const testo = (fixture: ComponentFixture<EventoFormComponent>) => (fixture.nativeElement as HTMLElement).textContent ?? '';
 
   /** Servizio di ricerca finto: nessuna chiamata a Nominatim dai test. */
@@ -148,6 +157,7 @@ describe('EventoFormComponent posizione', () => {
       geocoding.cerca.mockResolvedValue({ latitudine: 41.5, longitudine: 12.25, nome: 'Piazza Municipio 1, Soriano nel Cimino' });
       const fixture = avvia();
       compila(fixture, { indirizzo: 'Piazza Municipio 1' });
+      vai(fixture, 2);
 
       await fixture.componentInstance['trovaSullaMappa']();
       fixture.detectChanges();
@@ -181,6 +191,7 @@ describe('EventoFormComponent posizione', () => {
       geocoding.cerca.mockResolvedValue(null);
       const fixture = avvia();
       compila(fixture, { indirizzo: 'Via che non esiste' });
+      vai(fixture, 2);
 
       await fixture.componentInstance['trovaSullaMappa']();
       fixture.detectChanges();
@@ -193,12 +204,15 @@ describe('EventoFormComponent posizione', () => {
       geocoding.cerca.mockRejectedValue(new Error('rete assente'));
       const fixture = avvia();
       compila(fixture, { indirizzo: 'Piazza Municipio 1' });
+      vai(fixture, 2);
 
       await fixture.componentInstance['trovaSullaMappa']();
       fixture.detectChanges();
+      expect(testo(fixture)).toContain('La ricerca non è disponibile adesso');
+
+      vai(fixture, 3);
       fixture.componentInstance['salva']();
 
-      expect(testo(fixture)).toContain('La ricerca non è disponibile adesso');
       expect(store.crea).toHaveBeenCalledWith(expect.objectContaining({ latitudine: null, longitudine: null }));
     });
 
@@ -215,6 +229,7 @@ describe('EventoFormComponent posizione', () => {
       geocoding.cerca.mockResolvedValue({ latitudine: 41.5, longitudine: 12.25, nome: '<img src="x" onerror="alert(1)">' });
       const fixture = avvia();
       compila(fixture, { indirizzo: 'Piazza Municipio 1' });
+      vai(fixture, 2);
 
       await fixture.componentInstance['trovaSullaMappa']();
       fixture.detectChanges();
@@ -232,9 +247,11 @@ describe('EventoFormComponent posizione', () => {
     expect(form.controls.longitudine.value).toBe(12.25);
   });
 
+
   it('sends the trimmed address and the coordinates with a new report', () => {
     const fixture = avvia();
     compila(fixture, { indirizzo: '  Piazza Municipio 1  ', latitudine: 41.5, longitudine: 12.25 });
+    vai(fixture, 3);
 
     fixture.componentInstance['salva']();
 
@@ -246,6 +263,7 @@ describe('EventoFormComponent posizione', () => {
   it('sends no address and no coordinates when they are left empty', () => {
     const fixture = avvia();
     compila(fixture, { indirizzo: '   ' });
+    vai(fixture, 3);
 
     fixture.componentInstance['salva']();
 
@@ -256,9 +274,10 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     compila(fixture, { indirizzo: 'Via\nRoma' });
     fixture.componentInstance['form'].markAllAsTouched();
-    fixture.detectChanges();
+    vai(fixture, 2);
 
     expect(testo(fixture)).toContain('caratteri non ammessi');
+    vai(fixture, 3);
     fixture.componentInstance['salva']();
     expect(store.crea).not.toHaveBeenCalled();
   });
@@ -267,9 +286,10 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     compila(fixture, { indirizzo: 'a'.repeat(201) });
     fixture.componentInstance['form'].markAllAsTouched();
-    fixture.detectChanges();
+    vai(fixture, 2);
 
     expect(testo(fixture)).toContain('Al massimo 200 caratteri.');
+    vai(fixture, 3);
     fixture.componentInstance['salva']();
     expect(store.crea).not.toHaveBeenCalled();
   });
@@ -278,9 +298,10 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     compila(fixture, { latitudine: 41.5, longitudine: null });
     fixture.componentInstance['form'].markAllAsTouched();
-    fixture.detectChanges();
+    vai(fixture, 2);
 
     expect(testo(fixture)).toContain('Indica latitudine e longitudine insieme');
+    vai(fixture, 3);
     fixture.componentInstance['salva']();
     expect(store.crea).not.toHaveBeenCalled();
   });
@@ -289,7 +310,8 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     compila(fixture, { latitudine: 91, longitudine: 12 });
     fixture.componentInstance['form'].markAllAsTouched();
-    fixture.detectChanges();
+    fixture.componentInstance['coordinateAperte'].set(true);
+    vai(fixture, 2);
 
     expect(testo(fixture)).toContain('La latitudine va da -90 a 90');
   });
@@ -298,7 +320,8 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     compila(fixture, { latitudine: 41.5, longitudine: 12.1234567 });
     fixture.componentInstance['form'].markAllAsTouched();
-    fixture.detectChanges();
+    fixture.componentInstance['coordinateAperte'].set(true);
+    vai(fixture, 2);
 
     expect(testo(fixture)).toContain('La longitudine va da -180 a 180');
   });
@@ -307,11 +330,196 @@ describe('EventoFormComponent posizione', () => {
     const fixture = avvia();
     const malevolo = '<img src="x" onerror="alert(1)">';
     compila(fixture, { indirizzo: malevolo });
+    vai(fixture, 3);
 
     fixture.componentInstance['salva']();
     fixture.detectChanges();
 
     expect(store.crea).toHaveBeenCalledWith(expect.objectContaining({ indirizzo: malevolo }));
     expect((fixture.nativeElement as HTMLElement).querySelector('img')).toBeNull();
+  });
+});
+
+describe('EventoFormComponent passi', () => {
+  const esistente: EventoLocale = {
+    id: 'a',
+    nomeEvento: 'Sagra della castagna',
+    cittaEvento: 'Soriano',
+    dataInizioEvento: '2026-10-24T00:00:00',
+    dataFineEvento: '2026-10-26T00:00:00',
+    descrizioneEvento: 'Caldarroste e vino novello',
+    eventoConcluso: false,
+    dataOraUltimaModifica: '2026-10-01T10:00:00Z',
+    stato: 'Approvato',
+  };
+
+  const store = {
+    citta: signal<string[]>([]),
+    online: signal(true),
+    trova: (id: string) => (id === esistente.id ? esistente : undefined),
+    crea: vi.fn(() => ({ id: 'nuovo' })),
+    aggiorna: vi.fn(),
+    sincronizza: vi.fn(() => Promise.resolve(true)),
+  };
+
+  const avvia = (id?: string): ComponentFixture<EventoFormComponent> => {
+    const fixture = TestBed.createComponent(EventoFormComponent);
+    if (id) fixture.componentRef.setInput('id', id);
+    fixture.detectChanges();
+    return fixture;
+  };
+
+  const passo = (fixture: ComponentFixture<EventoFormComponent>) => fixture.componentInstance['passo']();
+  const testo = (fixture: ComponentFixture<EventoFormComponent>) => (fixture.nativeElement as HTMLElement).textContent ?? '';
+
+  /** Fills the required fields of every step with valid values. */
+  const compila = (fixture: ComponentFixture<EventoFormComponent>, valori: Record<string, unknown> = {}) => {
+    fixture.componentInstance['form'].patchValue({
+      nomeEvento: 'Sagra della castagna',
+      cittaEvento: 'Soriano',
+      dataInizioEvento: new Date(2026, 9, 24),
+      dataFineEvento: new Date(2026, 9, 26),
+      descrizioneEvento: 'Caldarroste e vino novello',
+      ...valori,
+    });
+  };
+
+  beforeEach(() => {
+    store.crea.mockClear();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: '**', children: [] }]),
+        MessageService,
+        { provide: PermessiService, useValue: { puoModificare: () => true } },
+        { provide: EventiStore, useValue: store },
+        { provide: GeocodingService, useValue: { cerca: vi.fn() } },
+      ],
+    });
+  });
+
+  it('stays on the first step while it is invalid and shows what is missing', () => {
+    const fixture = avvia();
+
+    fixture.componentInstance['avanti']();
+    fixture.detectChanges();
+
+    expect(passo(fixture)).toBe(1);
+    expect(testo(fixture)).toContain("Il nome dell'evento è obbligatorio.");
+    expect(testo(fixture)).toContain('La città è obbligatoria.');
+  });
+
+  it('moves to the second step when the first is valid, and unlocks it', () => {
+    const fixture = avvia();
+    compila(fixture);
+
+    fixture.componentInstance['avanti']();
+
+    expect(passo(fixture)).toBe(2);
+    expect(fixture.componentInstance['passoMassimo']()).toBe(2);
+  });
+
+  it('lets the optional second step be skipped when it is empty', () => {
+    const fixture = avvia();
+    compila(fixture);
+    fixture.componentInstance['avanti']();
+
+    fixture.componentInstance['avanti']();
+
+    expect(passo(fixture)).toBe(3);
+  });
+
+  it('does not leave the second step with a single coordinate, and opens the manual fields', () => {
+    const fixture = avvia();
+    compila(fixture, { latitudine: 41.5, longitudine: null });
+    fixture.componentInstance['avanti']();
+
+    fixture.componentInstance['avanti']();
+
+    expect(passo(fixture)).toBe(2);
+    expect(fixture.componentInstance['coordinateAperte']()).toBe(true);
+  });
+
+  it('does not allow jumping to a later step while creating', () => {
+    const fixture = avvia();
+
+    fixture.componentInstance['vaiAlPasso'](3);
+    fixture.componentInstance['vaiAlPasso'](undefined);
+
+    expect(passo(fixture)).toBe(1);
+  });
+
+  it('allows every step at once when editing', () => {
+    const fixture = avvia('a');
+
+    fixture.componentInstance['vaiAlPasso'](3);
+
+    expect(fixture.componentInstance['passoMassimo']()).toBe(3);
+    expect(passo(fixture)).toBe(3);
+  });
+
+  it('goes back without validating', () => {
+    const fixture = avvia();
+    compila(fixture);
+    fixture.componentInstance['avanti']();
+    fixture.componentInstance['form'].patchValue({ nomeEvento: '' });
+
+    fixture.componentInstance['indietro']();
+
+    expect(passo(fixture)).toBe(1);
+  });
+
+  it('moves forward instead of saving when submitted from an earlier step', () => {
+    const fixture = avvia();
+    compila(fixture);
+
+    fixture.componentInstance['salva']();
+
+    expect(store.crea).not.toHaveBeenCalled();
+    expect(passo(fixture)).toBe(2);
+  });
+
+  it('takes the user back to the first step with errors when the final submit is refused', () => {
+    const fixture = avvia();
+    compila(fixture, { indirizzo: 'a'.repeat(201) });
+    fixture.componentInstance['passo'].set(3);
+
+    fixture.componentInstance['salva']();
+
+    expect(store.crea).not.toHaveBeenCalled();
+    expect(passo(fixture)).toBe(2);
+  });
+
+  it('summarises the data in the last step', () => {
+    const fixture = avvia();
+    compila(fixture);
+    fixture.componentInstance['passo'].set(3);
+    fixture.detectChanges();
+
+    const t = testo(fixture);
+    expect(t).toContain('Sagra della castagna');
+    expect(t).toContain('dal 24/10/2026 al 26/10/2026');
+    expect(t).toContain('Non indicato');
+    expect(t).toContain('Non indicata');
+  });
+
+  it('says the position is set once the coordinates are filled', () => {
+    const fixture = avvia();
+    compila(fixture, { latitudine: 41.5, longitudine: 12.25, indirizzo: 'Piazza Municipio 1' });
+    fixture.componentInstance['passo'].set(3);
+    fixture.detectChanges();
+
+    expect(testo(fixture)).toContain('Indicata sulla mappa');
+    expect(testo(fixture)).toContain('Piazza Municipio 1');
+  });
+
+  it('shows hostile text in the summary as plain text, never as HTML', () => {
+    const fixture = avvia();
+    const malevolo = '<img src="x" onerror="alert(1)">';
+    compila(fixture, { nomeEvento: malevolo, cittaEvento: malevolo });
+    fixture.componentInstance['passo'].set(3);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')).toBeNull();
+    expect(testo(fixture)).toContain(malevolo);
   });
 });
