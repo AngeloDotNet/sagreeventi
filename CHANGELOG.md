@@ -4,6 +4,30 @@ Registro delle modifiche al codice: un titolo per giorno, con una sottosezione p
 
 ## 2026-11-14
 
+### Mappa grigia nel form a passi: ricalcolo della dimensione
+
+**Perché:** provando il form nel browser la mappa del passo «Dove» mostrava solo un angolo di tasselli e il resto grigio. Leaflet crea la mappa mentre il pannello dello stepper si sta ancora aprendo, misura una dimensione provvisoria e non la ricalcola.
+**Cosa / Dove:** `shared/mappa/mappa.component.ts`: un `ResizeObserver` sul contenitore chiama `invalidateSize()` a ogni cambio di dimensione (disconnesso alla distruzione; assente in jsdom, quindi protetto). `mappa.component.spec.ts`: finto Leaflet con `invalidateSize` e un test che simula il ridimensionamento.
+**Verifica:** lint pulito, 468 test su 24 file, build di produzione senza errori. Problema risolto, confermato dall'utente nel browser.
+**Note:** vale anche per la mappa del dettaglio evento.
+
+### Cancellato il piano di aggiornamento ad Angular e PrimeNG 22
+
+**Perché:** l'utente ha deciso di non aggiornare: PrimeNG dopo la versione 21 richiede una licenza (non verificato da me), e `core.md` §3 vieta software a pagamento.
+**Cosa / Dove:** cancellato `docs/piani/PLAN-aggiornamento-angular.md` (non tracciato, nessun commit). `CLAUDE.md`: riga sulla versione di Node senza il rimando al piano e nuova nota «Angular e PrimeNG restano alla versione 21». `CHECKLIST.md` e `PIANO.md`: riferimenti aggiornati; le 25 vulnerabilità moderate solo di sviluppo restano un punto aperto con tre strade (aggiornamenti minori dentro la 21, `overrides` di npm, o accettarle con motivo).
+**Verifica:** solo documentazione, nessuna build.
+**Note:** Dependabot potrebbe proporre PrimeNG 22: da chiudere. Le voci storiche di questo file che parlano di «Angular 22» non sono state toccate.
+
+### Form evento a passi (stepper)
+
+**Perché:** rendere più ordinato il form di `/eventi/nuovo` e `/eventi/:id/modifica`, soprattutto su telefono (`docs/piani/PLAN-form-stepper.md`).
+**Cosa / Dove:**
+- `evento-form.component.html` e `.ts`: `p-stepper` con tre passi (Cosa e quando; Dove, facoltativo; Descrizione) e pulsanti Avanti, Indietro e Annulla. Si avanza solo se i campi del passo sono validi; in creazione i passi successivi restano disabilitati, in modifica sono tutti cliccabili. Il passo «Dove» non blocca se è vuoto ma rifiuta valori non validi. Invio in un campo dei primi passi fa «Avanti»; un invio rifiutato riporta al primo passo con errori. Latitudine e longitudine stanno in una sezione chiusa («Inserisci le coordinate a mano»), che si apre da sola se contengono errori. Il passo finale mostra la scheda «Controlla i dati» (nome, città, periodo, indirizzo, posizione).
+- `styles.css`, sezione «Form»: sotto i 600px solo il passo corrente mostra il titolo, pulsanti a tutta larghezza in colonna, altezza minima 44px, stile della scheda di riepilogo; solo variabili CSS esistenti.
+- `evento-form.component.spec.ts`: i test esistenti adattati ai passi (helper `vai`) e 12 test nuovi (blocco e avanzamento, passo 2 saltabile, coordinata singola, passi liberi in modifica, Invio, invio rifiutato, riepilogo e testo ostile come testo).
+**Verifica:** lint pulito, 468 test su 24 file, build di produzione senza errori. Il form è stato provato nel browser dall'utente (mappa compresa, vedi la voce sotto); verifica da tastiera e con axe non fatta.
+**Note:** `p-stepper` 21.1.10 con `linear` disabilita tutti i passi non attivi, quindi non si usa: l'avanzamento lo gestisce il componente. Prettier segnala questi file come già prima, non riformattati (`CLAUDE.md`). Restano da fare le verifiche con tastiera e lettore di schermo.
+
 ### GPS A2–A4 pubblicati (PR #67)
 
 **Perché:** chiudere la parte frontend del GPS: indirizzo, coordinate, mappa e ricerca indirizzi (le voci di dettaglio A2, A3 e A4 sono più sotto, nel loro giorno).
