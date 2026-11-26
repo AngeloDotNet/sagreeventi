@@ -455,6 +455,26 @@ main { min-height: calc(100vh - var(--altezza-topbar)); padding-bottom: 6rem; }
 .contatore { justify-self: end; color: var(--ink-soft); font-size: 0.8rem; }
 .form-azioni { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
 
+/* Event form stepper: compact header and full-width actions on phones */
+.stepper-form { display: block; }
+.stepper-form .passo-form { padding-top: 1.35rem; }
+.stepper-form .form-azioni p-button .p-button { min-height: 2.75rem; }
+.riepilogo { display: grid; gap: 0.6rem; padding: 1rem 1.1rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.riepilogo h2 { margin: 0; font-size: 1rem; }
+.riepilogo dl { display: grid; gap: 0.5rem; margin: 0; }
+.riepilogo dl > div { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 0.75rem; }
+.riepilogo dt { color: var(--ink-soft); font-size: 0.875rem; }
+.riepilogo dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 599px) {
+  /* Only the current step keeps its title: three titles do not fit in 360px */
+  .stepper-form .p-step:not([data-p-active='true']) .p-step-title { display: none; }
+  .stepper-form .passo-form .form-azioni { flex-direction: column; align-items: stretch; }
+  .stepper-form .passo-form .form-azioni p-button { display: block; }
+  .stepper-form .passo-form .form-azioni p-button .p-button,
+  .stepper-form .passo-form .form-azioni .btn { width: 100%; justify-content: center; }
+  .riepilogo dl > div { grid-template-columns: 1fr; gap: 0.1rem; }
+}
+
 /* ---------- Agenda ---------- */
 .agenda-mese { margin-top: 2.25rem; }
 .agenda-mese h2 { margin-bottom: 0.9rem; }

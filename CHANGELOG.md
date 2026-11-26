@@ -2,7 +2,55 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-26
+
+### Rilascio 1.2.0
+
+La posizione degli eventi arriva nell'interfaccia (mappa e ricerca indirizzi) e il form di inserimento e modifica diventa a tre passi.
+
+**Aggiunto:**
+- Indirizzo e coordinate facoltativi nel form dell'evento, conservati anche nelle bozze locali e nella sincronizzazione.
+- Mappa nel dettaglio e nel form: il punto si sceglie con un tocco o trascinando il segnaposto; il pulsante «Trova sulla mappa» cerca l'indirizzo. Il dettaglio ha il link alla mappa esterna.
+- Configurazione dei servizi di mappa in `config.json` (`mappa.tileUrl` e `mappa.nominatimUrl`).
+
+**Modificato:**
+- Form dell'evento a tre passi (cosa e quando, dove, descrizione) con riepilogo prima dell'invio, adattato al telefono.
+- Nuove dipendenze del frontend: `leaflet` 1.9.4, `@types/leaflet` 1.9.22 e, solo per i test, `axe-core` 4.14.0. Aggiornata `@hono/node-server` (indiretta, solo sviluppo).
+- Regole di progetto riallineate al template (`core.md` 3.44, `git.md` 1.9). Angular e PrimeNG restano alla versione 21.
+
+**Sicurezza:**
+- Gli indirizzi dei servizi di mappa in `config.json` sono accettati solo in `https://`; il nome restituito dalla ricerca indirizzi è mostrato come testo.
+- La mappa e la ricerca inviano richieste a servizi esterni (di default OpenStreetMap e Nominatim; il link del dettaglio apre Google Maps).
+- Restano 26 vulnerabilità moderate nelle dipendenze di sviluppo (0 in produzione), segnalate da `npm audit`.
+
+**Verifica:** backend con build `Release` senza avvisi e 429 test; frontend con 468 test su 24 file, lint pulito e build di produzione senza avvisi. Nessun pacchetto NuGet vulnerabile. Licenze: controllo NuGet superato; controllo npm superato escludendo `axe-core` (MPL-2.0, eccezione di `core.md` §3 per i test, non ancora riportata nel comando di `CLAUDE.md`).
+**Note:** nessuna migrazione nuova rispetto alla 1.1.0 (`AddPosizioneEventi` era già inclusa) e nessun file del backend modificato. Da fare: verifica del form da tastiera, con lettore di schermo e con axe; contrasto del segnaposto sui temi; CSP con la mappa (`PLAN-security-headers.md`).
+
 ## 2026-11-14
+
+### Mappa grigia nel form a passi: ricalcolo della dimensione
+
+**Perché:** provando il form nel browser la mappa del passo «Dove» mostrava solo un angolo di tasselli e il resto grigio. Leaflet crea la mappa mentre il pannello dello stepper si sta ancora aprendo, misura una dimensione provvisoria e non la ricalcola.
+**Cosa / Dove:** `shared/mappa/mappa.component.ts`: un `ResizeObserver` sul contenitore chiama `invalidateSize()` a ogni cambio di dimensione (disconnesso alla distruzione; assente in jsdom, quindi protetto). `mappa.component.spec.ts`: finto Leaflet con `invalidateSize` e un test che simula il ridimensionamento.
+**Verifica:** lint pulito, 468 test su 24 file, build di produzione senza errori. Problema risolto, confermato dall'utente nel browser.
+**Note:** vale anche per la mappa del dettaglio evento.
+
+### Cancellato il piano di aggiornamento ad Angular e PrimeNG 22
+
+**Perché:** l'utente ha deciso di non aggiornare: PrimeNG dopo la versione 21 richiede una licenza (non verificato da me), e `core.md` §3 vieta software a pagamento.
+**Cosa / Dove:** cancellato `docs/piani/PLAN-aggiornamento-angular.md` (non tracciato, nessun commit). `CLAUDE.md`: riga sulla versione di Node senza il rimando al piano e nuova nota «Angular e PrimeNG restano alla versione 21». `CHECKLIST.md` e `PIANO.md`: riferimenti aggiornati; le 25 vulnerabilità moderate solo di sviluppo restano un punto aperto con tre strade (aggiornamenti minori dentro la 21, `overrides` di npm, o accettarle con motivo).
+**Verifica:** solo documentazione, nessuna build.
+**Note:** Dependabot potrebbe proporre PrimeNG 22: da chiudere. Le voci storiche di questo file che parlano di «Angular 22» non sono state toccate.
+
+### Form evento a passi (stepper)
+
+**Perché:** rendere più ordinato il form di `/eventi/nuovo` e `/eventi/:id/modifica`, soprattutto su telefono (`docs/piani/PLAN-form-stepper.md`).
+**Cosa / Dove:**
+- `evento-form.component.html` e `.ts`: `p-stepper` con tre passi (Cosa e quando; Dove, facoltativo; Descrizione) e pulsanti Avanti, Indietro e Annulla. Si avanza solo se i campi del passo sono validi; in creazione i passi successivi restano disabilitati, in modifica sono tutti cliccabili. Il passo «Dove» non blocca se è vuoto ma rifiuta valori non validi. Invio in un campo dei primi passi fa «Avanti»; un invio rifiutato riporta al primo passo con errori. Latitudine e longitudine stanno in una sezione chiusa («Inserisci le coordinate a mano»), che si apre da sola se contengono errori. Il passo finale mostra la scheda «Controlla i dati» (nome, città, periodo, indirizzo, posizione).
+- `styles.css`, sezione «Form»: sotto i 600px solo il passo corrente mostra il titolo, pulsanti a tutta larghezza in colonna, altezza minima 44px, stile della scheda di riepilogo; solo variabili CSS esistenti.
+- `evento-form.component.spec.ts`: i test esistenti adattati ai passi (helper `vai`) e 12 test nuovi (blocco e avanzamento, passo 2 saltabile, coordinata singola, passi liberi in modifica, Invio, invio rifiutato, riepilogo e testo ostile come testo).
+**Verifica:** lint pulito, 468 test su 24 file, build di produzione senza errori. Il form è stato provato nel browser dall'utente (mappa compresa, vedi la voce sotto); verifica da tastiera e con axe non fatta.
+**Note:** `p-stepper` 21.1.10 con `linear` disabilita tutti i passi non attivi, quindi non si usa: l'avanzamento lo gestisce il componente. Prettier segnala questi file come già prima, non riformattati (`CLAUDE.md`). Restano da fare le verifiche con tastiera e lettore di schermo.
 
 ### GPS A2–A4 pubblicati (PR #67)
 
