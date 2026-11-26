@@ -62,6 +62,7 @@ export class MappaComponent implements AfterViewInit {
   private leaflet?: Leaflet;
   private mappa?: MappaLeaflet;
   private segnaposto?: Segnaposto;
+  private osservatore?: ResizeObserver;
 
   /** Leaflet non si è caricato (rete assente o blocco): resta solo il testo. */
   protected readonly errore = signal(false);
@@ -89,7 +90,10 @@ export class MappaComponent implements AfterViewInit {
       untracked(() => this.segnaposto?.dragging?.[modificabile ? 'enable' : 'disable']());
     });
 
-    this.destroyRef.onDestroy(() => this.mappa?.remove());
+    this.destroyRef.onDestroy(() => {
+      this.osservatore?.disconnect();
+      this.mappa?.remove();
+    });
   }
 
   /** La vista è pronta: si crea la mappa nel contenitore (Leaflet ha bisogno del suo elemento nel DOM). */
@@ -103,6 +107,13 @@ export class MappaComponent implements AfterViewInit {
       const L = this.leaflet;
       this.mappa = L.map(this.contenitore().nativeElement, { attributionControl: true }).setView(CENTRO_ITALIA, ZOOM_ITALIA);
       L.tileLayer(this.config.mappa().tileUrl, { maxZoom: 19, attribution: ATTRIBUZIONE }).addTo(this.mappa);
+
+      // The container can still be animating open (stepper panel) or hidden when the map is created: without a
+      // recalculation Leaflet keeps the first, wrong size and draws only part of the tiles.
+      if (typeof ResizeObserver !== 'undefined') {
+        this.osservatore = new ResizeObserver(() => this.mappa?.invalidateSize());
+        this.osservatore.observe(this.contenitore().nativeElement);
+      }
 
       if (this.modificabile()) {
         this.mappa.on('click', (evento) =>

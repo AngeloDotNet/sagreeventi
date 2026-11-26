@@ -4,6 +4,7 @@ import { MappaComponent } from './mappa.component';
 /** Stato condiviso con il finto Leaflet: il test può far fallire la creazione della mappa e leggere i gestori degli eventi. */
 const leaflet = vi.hoisted(() => ({
   fallisci: false,
+  invalidaDimensione: undefined as (() => void) | undefined,
   gestori: {} as Record<string, (evento: { latlng: { lat: number; lng: number } }) => void>,
 }));
 
@@ -28,6 +29,7 @@ vi.mock('leaflet', () => {
         return map;
       },
       remove: () => undefined,
+      invalidateSize: () => leaflet.invalidaDimensione?.(),
     };
     return map;
   };
@@ -104,5 +106,32 @@ describe('MappaComponent', () => {
     leaflet.gestori['click']({ latlng: { lat: 41.1234567891, lng: 12.5 } });
 
     expect(ricevuto).toHaveBeenCalledWith({ latitudine: 41.123457, longitudine: 12.5 });
+  });
+
+  it('recalculates the map size when its container is resized, so no tile is left grey', async () => {
+    let osservatore: (() => void) | undefined;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(gestore: () => void) {
+          osservatore = gestore;
+        }
+        observe = () => undefined;
+        disconnect = () => undefined;
+      },
+    );
+    const invalida = vi.fn();
+    leaflet.invalidaDimensione = invalida;
+    try {
+      await crea({ latitudine: 41.5, longitudine: 12.25 });
+      await vi.waitFor(() => expect(osservatore).toBeDefined());
+
+      osservatore?.();
+
+      expect(invalida).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+      leaflet.invalidaDimensione = undefined;
+    }
   });
 });
