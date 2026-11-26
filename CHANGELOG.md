@@ -2,6 +2,30 @@
 
 Registro delle modifiche al codice: un titolo per giorno, con una sottosezione per intervento (cosa, dove e perché). Più recente in alto.
 
+## 2026-11-26
+
+### Rilascio 1.2.0
+
+La posizione degli eventi arriva nell'interfaccia (mappa e ricerca indirizzi) e il form di inserimento e modifica diventa a tre passi.
+
+**Aggiunto:**
+- Indirizzo e coordinate facoltativi nel form dell'evento, conservati anche nelle bozze locali e nella sincronizzazione.
+- Mappa nel dettaglio e nel form: il punto si sceglie con un tocco o trascinando il segnaposto; il pulsante «Trova sulla mappa» cerca l'indirizzo. Il dettaglio ha il link alla mappa esterna.
+- Configurazione dei servizi di mappa in `config.json` (`mappa.tileUrl` e `mappa.nominatimUrl`).
+
+**Modificato:**
+- Form dell'evento a tre passi (cosa e quando, dove, descrizione) con riepilogo prima dell'invio, adattato al telefono.
+- Nuove dipendenze del frontend: `leaflet` 1.9.4, `@types/leaflet` 1.9.22 e, solo per i test, `axe-core` 4.14.0. Aggiornata `@hono/node-server` (indiretta, solo sviluppo).
+- Regole di progetto riallineate al template (`core.md` 3.44, `git.md` 1.9). Angular e PrimeNG restano alla versione 21.
+
+**Sicurezza:**
+- Gli indirizzi dei servizi di mappa in `config.json` sono accettati solo in `https://`; il nome restituito dalla ricerca indirizzi è mostrato come testo.
+- La mappa e la ricerca inviano richieste a servizi esterni (di default OpenStreetMap e Nominatim; il link del dettaglio apre Google Maps).
+- Restano 26 vulnerabilità moderate nelle dipendenze di sviluppo (0 in produzione), segnalate da `npm audit`.
+
+**Verifica:** backend con build `Release` senza avvisi e 429 test; frontend con 468 test su 24 file, lint pulito e build di produzione senza avvisi. Nessun pacchetto NuGet vulnerabile. Licenze: controllo NuGet superato; controllo npm superato escludendo `axe-core` (MPL-2.0, eccezione di `core.md` §3 per i test, non ancora riportata nel comando di `CLAUDE.md`).
+**Note:** nessuna migrazione nuova rispetto alla 1.1.0 (`AddPosizioneEventi` era già inclusa) e nessun file del backend modificato. Da fare: verifica del form da tastiera, con lettore di schermo e con axe; contrasto del segnaposto sui temi; CSP con la mappa (`PLAN-security-headers.md`).
+
 ## 2026-11-14
 
 ### Mappa grigia nel form a passi: ricalcolo della dimensione
